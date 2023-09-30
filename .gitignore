@@ -1,0 +1,32 @@
+backup/
+data/
+results/
+toolbox
+
+# Matlab
+**/*.asv
+**/BCI_MI_sa_eLoreta.mat
+**/BCI_MI_LCMV.mat
+toolboxes/bbci_public
+toolboxes/eeglab2021.0
+toolboxes/fooof_mat
+toolboxes/haufe/sa_nyhead.mat
+toolboxes/tprod
+
+# R
+**/.Rhistory
+**/*.Rproj
+
+# LaTeX
+**/*.aux
+**/*.bbl
+**/*.blg
+**/*.loc
+**/*.log
+**/*.out
+**/*.pdf
+**/*.soc
+**/*.spl
+
+# Compiled README
+README.html

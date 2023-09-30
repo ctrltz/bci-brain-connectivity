@@ -1,0 +1,50 @@
+\newcommand{\multiverseRestSummary}{
+\begin{tabular}{ccccccc}
+\toprule
+Predictor & Response & $\beta$ & t-value & p-value & 95\% CI & Consistency\\
+\midrule
+SNR & Accuracy & 0.263 & 7.494 & \textbf{$<$0.001*} & $[ 0.193, 0.332]$ & 1.00\\
+\midrule
+Session & SNR & 0.005 & 0.253 & 0.801 & $[-0.034, 0.044]$ & 1.00\\
+\midrule
+SNR & WH ImCoh & 0.219 & 17.389 & \textbf{$<$0.001*} & $[ 0.194, 0.244]$ & 0.92\\
+SNR & WH LagCoh & 0.416 & 31.590 & \textbf{$<$0.001*} & $[ 0.390, 0.442]$ & 1.00\\
+SNR & WH Coherence & 0.105 & 16.783 & \textbf{$<$0.001*} & $[ 0.092, 0.119]$ & 0.88\\
+\addlinespace
+SNR & AH ImCoh & 0.188 & 14.487 & \textbf{$<$0.001*} & $[ 0.162, 0.213]$ & 0.88\\
+SNR & AH LagCoh & 0.229 & 17.998 & \textbf{$<$0.001*} & $[ 0.204, 0.254]$ & 0.96\\
+SNR & AH Coherence & 0.157 & 12.599 & \textbf{$<$0.001*} & $[ 0.132, 0.182]$ & 0.46\\
+\midrule
+WH ImCoh & Accuracy & 0.021 & 3.744 & \textbf{$<$0.001*} & $[ 0.010, 0.032]$ & 0.58\\
+WH LagCoh & Accuracy & 0.036 & 5.835 & \textbf{$<$0.001*} & $[ 0.024, 0.048]$ & 0.58\\
+WH Coherence & Accuracy & 0.008 & 1.564 & 0.118 & $[-0.002, 0.018]$ & 0.62\\
+\addlinespace
+WH ImCoh & Accuracy $|$ SNR & 0.013 & 1.786 & 0.074 & $[-0.001, 0.026]$ & 0.88\\
+WH LagCoh & Accuracy $|$ SNR & 0.004 & 0.566 & 0.572 & $[-0.010, 0.017]$ & 0.88\\
+WH Coherence & Accuracy $|$ SNR & -0.001 & -0.106 & 0.916 & $[-0.023, 0.021]$ & 0.92\\
+\addlinespace
+AH ImCoh & Accuracy & 0.017 & 3.120 & \textbf{0.002*} & $[ 0.006, 0.028]$ & 0.12\\
+AH LagCoh & Accuracy & 0.017 & 3.129 & \textbf{0.002*} & $[ 0.006, 0.028]$ & 0.12\\
+AH Coherence & Accuracy & 0.006 & 1.196 & 0.232 & $[-0.004, 0.017]$ & 0.88\\
+\addlinespace
+AH ImCoh & Accuracy $|$ SNR & 0.010 & 1.477 & 0.140 & $[-0.003, 0.023]$ & 1.00\\
+AH LagCoh & Accuracy $|$ SNR & 0.006 & 0.809 & 0.419 & $[-0.008, 0.019]$ & 1.00\\
+AH Coherence & Accuracy $|$ SNR & -0.007 & -0.965 & 0.335 & $[-0.020, 0.007]$ & 0.92\\
+\midrule
+Session & WH ImCoh & -0.013 & -2.215 & \textbf{0.027} & $[-0.025,-0.002]$ & 0.75\\
+Session & WH LagCoh & -0.016 & -2.528 & \textbf{0.011} & $[-0.029,-0.004]$ & 0.79\\
+Session & WH Coherence & 0.002 & 0.451 & 0.652 & $[-0.005, 0.008]$ & 0.58\\
+\addlinespace
+Session & WH ImCoh $|$ SNR & -0.013 & -2.133 & \textbf{0.033} & $[-0.025,-0.001]$ & 0.71\\
+Session & WH LagCoh $|$ SNR & -0.015 & -2.415 & \textbf{0.016} & $[-0.027,-0.003]$ & 0.79\\
+Session & WH Coherence $|$ SNR & 0.002 & 0.634 & 0.526 & $[-0.004, 0.009]$ & 0.71\\
+\addlinespace
+Session & AH ImCoh & 0.002 & 0.380 & 0.704 & $[-0.010, 0.015]$ & 0.92\\
+Session & AH LagCoh & 0.006 & 0.902 & 0.367 & $[-0.006, 0.018]$ & 0.92\\
+Session & AH Coherence & 0.017 & 2.889 & \textbf{0.004*} & $[ 0.006, 0.029]$ & 0.25\\
+\addlinespace
+Session & AH ImCoh $|$ SNR & 0.003 & 0.481 & 0.631 & $[-0.009, 0.015]$ & 0.92\\
+Session & AH LagCoh $|$ SNR & 0.006 & 1.037 & 0.300 & $[-0.006, 0.018]$ & 0.92\\
+Session & AH Coherence $|$ SNR & 0.018 & 3.000 & \textbf{0.003*} & $[ 0.006, 0.030]$ & 0.29\\
+\bottomrule
+\end{tabular}}

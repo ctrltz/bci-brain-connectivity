@@ -1,0 +1,25 @@
+\newcommand{\pipelineEffectsSummary}{
+\begin{tabular}{lccccc}
+\toprule
+\multicolumn{1}{l}{Value} & \multicolumn{1}{c}{Inverse Method} & \multicolumn{1}{c}{ROI Method} & \multicolumn{1}{c}{ROI Method} & \multicolumn{1}{c}{Source Mask} & \multicolumn{1}{c}{Band} \\
+  & LCMV $|$ eLORETA & 3SVD $|$ 1SVD & AVG-F $|$ 1SVD & With $|$ Without & NB $|$ BB\\
+\midrule
+SNR & \textbf{8.01*} & -1.85 & 1.1 & 1.29 & ---\\
+\addlinespace
+WH ImCoh & -1.9 & \textbf{3.31*} & \textbf{2.48} & \textbf{-4.16*} & \textbf{-2.15}\\
+WH LagCoh & \textbf{-3.55*} & -1.51 & \textbf{2.16} & -1.53 & \textbf{-7.5*}\\
+WH Coherence & 0.42 & \textbf{-5.55*} & -2.07 & \textbf{3.71*} & -1.18\\
+\addlinespace
+AH ImCoh & \textbf{-4.91*} & \textbf{3.28*} & -0.13 & -0.64 & \textbf{-17.33*}\\
+AH LagCoh & \textbf{-3.24*} & 1.69 & -1.02 & -1.33 & \textbf{-13.46*}\\
+AH Coherence & 0.96 & -1.42 & \textbf{-2.21} & -1.83 & \textbf{-2.5}\\
+\addlinespace
+WH ImCoh $|$ SNR & \textbf{-2.83} & \textbf{3.54*} & \textbf{2.37} & \textbf{-4.33*} & \textbf{-2.16}\\
+WH LagCoh $|$ SNR & \textbf{-6.95*} & -0.65 & 1.61 & -2.05 & \textbf{-7.27*}\\
+WH Coherence $|$ SNR & 0.14 & \textbf{-5.47*} & \textbf{-2.11} & \textbf{3.66*} & -1.17\\
+\addlinespace
+AH ImCoh $|$ SNR & \textbf{-6.81*} & \textbf{3.74*} & -0.4 & -0.95 & \textbf{-17.42*}\\
+AH LagCoh $|$ SNR & \textbf{-4.92*} & 2.06 & -1.25 & -1.59 & \textbf{-13.17*}\\
+AH Coherence $|$ SNR & 0.53 & -1.31 & \textbf{-2.25} & -1.88 & \textbf{-2.48}\\
+\bottomrule
+\end{tabular}}

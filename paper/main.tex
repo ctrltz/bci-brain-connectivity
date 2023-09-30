@@ -1,0 +1,115 @@
+\documentclass[preprint,authoryear,semicolon,12pt]{elsarticle}
+\usepackage{cmap}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[final, defaultcolor=red]{changes}
+\usepackage{xr}
+\usepackage[colorlinks=true]{hyperref}
+
+%----Helper code for dealing with external references----
+% (by cyberSingularity at http://tex.stackexchange.com/a/69832/226)
+% see also https://www.overleaf.com/learn/how-to/Cross_referencing_with_the_xr_package_in_Overleaf
+
+\usepackage{xr}
+\makeatletter
+
+\newcommand*{\addFileDependency}[1]{% argument=file name and extension
+\typeout{(#1)}% latexmk will find this if $recorder=0
+% however, in that case, it will ignore #1 if it is a .aux or 
+% .pdf file etc and it exists! If it doesn't exist, it will appear 
+% in the list of dependents regardless)
+%
+% Write the following if you want it to appear in \listfiles 
+% --- although not really necessary and latexmk doesn't use this
+%
+\@addtofilelist{#1}
+%
+% latexmk will find this message if #1 doesn't exist (yet)
+\IfFileExists{#1}{}{\typeout{No file #1.}}
+}\makeatother
+
+\newcommand*{\myexternaldocument}[1]{%
+\externaldocument[supp-]{#1}%
+\addFileDependency{#1.tex}%
+\addFileDependency{#1.aux}%
+}
+%------------End of helper code--------------
+
+% Links to the external document
+\myexternaldocument{supplementary}
+
+
+% Remove info about journal submission
+\journal{}
+\makeatletter
+\def\ps@pprintTitle{%
+  \let\@oddhead\@empty
+  \let\@evenhead\@empty
+  \def\@oddfoot{\reset@font\hfil\thepage\hfil}
+  \let\@evenfoot\@oddfoot
+}
+\makeatother
+
+\graphicspath{ {./figures/} }
+
+\newcommand{\at}{@}
+\newcommand{\tofix}[1]{\textcolor{magenta}{#1}}
+\input{numbers/combined}
+
+\numberwithin{equation}{section}
+\geometry{a4paper, total={170mm,257mm}, left=20mm, top=20mm}
+\parindent = 0 cm
+
+\begin{document}
+
+\begin{frontmatter}
+
+% Title
+
+\title{Sensorimotor brain-computer interface performance depends on signal-to-noise ratio but not connectivity of the mu rhythm in a multiverse analysis of longitudinal data}
+
+\input{authors}
+    
+% Abstract
+
+\begin{abstract}
+    \input{sections/abstract}
+\end{abstract}
+
+\end{frontmatter}
+
+%% Main text
+
+\newpage
+
+\input{sections/introduction}
+
+\input{sections/methods}
+
+\input{sections/results}
+
+\input{sections/discussion}
+
+\section*{Data and Code Availability}
+
+EEG recordings are publicly available at \texttt{\url{https://doi.org/10.6084/m9.figshare.13123148}}, and a detailed description of the dataset is provided in \citep{Stieger2021_dataset}. Analysis scripts are available at \texttt{\url{https://github.com/ctrltz/bci-brain-connectivity}}. Preprocessing data that is necessary to reproduce the analysis (indices of bad trials, channels, and ICA components, ICA weights, excluded sessions, etc.) are available at \texttt{\url{https://osf.io/tcvyd}}.
+
+\section*{CRediT Authorship Contribution Statement}
+
+\textbf{Nikolai Kapralov:} Conceptualization, Data curation, Formal analysis, Investigation, Methodology, Software, Visualization, Writing – original draft, Writing – review \& editing. \textbf{Mina Jamshidi Idaji:} Validation (Code Review), Writing – review \& editing. \textbf{Tilman Stephani:} Methodology, Validation (Code Review), Writing – review \& editing. \textbf{Alina Studenova:} Validation (Code Review), Writing – review \& editing. \textbf{Carmen Vidaurre:} Software, Writing – review \& editing. \textbf{Tomas Ros:} Writing – review \& editing. \textbf{Arno Villringer:} Funding acquisition, Writing – review \& editing. \textbf{Vadim Nikulin:} Conceptualization, Investigation, Methodology, Project administration, Supervision, Writing – Original Draft, Writing – review \& editing.
+
+\section*{Acknowledgements}
+
+We would like to thank the authors of the dataset for making it publicly available and James Stieger in particular for providing additional information about the dataset on request.
+
+\bibliographystyle{elsarticle-harv} 
+\bibliography{main}
+
+\end{document}

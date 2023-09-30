@@ -1,0 +1,19 @@
+
+% Significance Testing
+
+\newcommand{\pSignificant}{0.05}
+\newcommand{\numComparisons}{6}
+
+% Formulas
+
+\newcommand{\formulaAccuracySession}{Accuracy $\sim$ 1 + Session + (Session $|$ Subject)}
+\newcommand{\formulaAccuracySNR}{Accuracy $\sim$ 1 + SNR + (SNR $|$ Subject)}
+\newcommand{\formulaSNRSession}{SNR $\sim$ 1 + Session + (Session $|$ Subject)}
+\newcommand{\formulaSNRConnectivity}{PS $\sim$ 1 + SNR + (1 $|$ Subject)}
+\newcommand{\formulaAccuracyConnectivity}{Accuracy $\sim$ 1 + PS + (1 $|$ Subject)}
+\newcommand{\formulaAccuracyConnectivitySNR}{Accuracy $\sim$ 1 + SNR + PS + (1 $|$ Subject)}
+\newcommand{\formulaConnectivitySession}{PS $\sim$ 1 + Session + (1 $|$ Subject)}
+\newcommand{\formulaConnectivitySessionSNR}{PS $\sim$ 1 + SNR + Session + (1 $|$ Subject)}
+\newcommand{\formulaSNRProcessing}{SNR $\sim$ Inv. + ROI + Mask + (1 $|$ Subject) + (1 $|$ Pipeline)}
+\newcommand{\formulaConnectivityProcessing}{PS $\sim$ Inv. + ROI + Band + Mask + (1 $|$ Subject) + (1 $|$ Pipeline)}
+\newcommand{\formulaConnectivityProcessingSNR}{PS $\sim$ SNR + Inv. + ROI + Band + Mask + (1 $|$ Subject) + (1 $|$ Pipeline)}
