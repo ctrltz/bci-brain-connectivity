@@ -1,8 +1,10 @@
 ## BCI & Brain Connectivity
 
+[![DOI](https://zenodo.org/badge/688030003.svg)](https://zenodo.org/badge/latestdoi/688030003)
+
 This repository contains the code for the multiverse analysis of SNR and EEG-based functional connectivity in the context of sensorimotor BCI training. Please refer to the accompanying paper for details and cite it if you use the code from this repository:
 
-> Kapralov, N., Jamshidi Idaji, M., Stephani, T., Studenova, A., Vidaurre, C., Ros., T., Villringer, A., Nikulin, V. Sensorimotor brain-computer interface performance depends on signal-to-noise ratio but not connectivity of the mu rhythm in a multiverse analysis of longitudinal data. TBD
+> Kapralov, N., Jamshidi Idaji, M., Stephani, T., Studenova, A., Vidaurre, C., Ros., T., Villringer, A., Nikulin, V., 2023. Sensorimotor brain-computer interface performance depends on signal-to-noise ratio but not connectivity of the mu rhythm in a multiverse analysis of longitudinal data. bioRxiv. doi:[10.1101/2023.09.30.558407](https://doi.org/10.1101/2023.09.30.558407)
 
 ### Prerequisites
 
