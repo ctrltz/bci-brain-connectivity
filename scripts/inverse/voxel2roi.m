@@ -1,28 +1,24 @@
-function [roi_data, ev, w] = voxel2roi(voxel_data, agg_method, n_comps, signflip)
+function [roi_data, ev, w] = voxel2roi(voxel_data, agg_method, n_comps, weights)
 % VOXEL2ROI Obtain time courses of source reconstructed activity in a ROI
 %
 % Parameters:
 %   voxel_data - source-space data, either continuous [channels x samples]
 %     or epoched [channels x samples x epochs]
-%   agg_method ['svd' | 'avg' | 'avg_flip'] - method for aggregation of
-%     time series of activity for sources within the ROI
+%   agg_method ['w' | 'avg' | 'svd' | 'avg-flip'] - method for aggregation 
+%     of time series of activity for sources within the ROI
 %   n_comps - how many components per ROI to extract (only used when
 %     agg_method is 'svd', otherwise will effectively be 1)
-%   signflip - vector of signs (-1 or 1) that should be applied to sources
-%     within the ROI before averaging (only used when agg_method is
-%     'avg_flip')
+%   weights - weights that should be applied to sources within the ROI 
+%     (-1/N or 1/N when agg_method is 'avg_flip', 
+%     custom when agg_method is 'w')
 %
 % Returns:
 %   roi_data - source reconstructed data, third dimension is flattened if
 %     epochs were provided [n_comps x (samples*epochs)]
 %   ev - variance explained by each of the kept SVD components (makes sense
 %     only if agg_method is 'svd')
-%   w - source weights corresponding to the kept SVD components (make sense
-%     only if agg_method is 'svd')
-
-    % explained variance and weights are meaningful only for SVD
-    ev = 0;
-    w = [];
+%   w - source weights (either obtained from SVD or same as the 'weights'
+%     argument)
 
     switch (agg_method)
         case 'svd'
@@ -36,10 +32,19 @@ function [roi_data, ev, w] = voxel2roi(voxel_data, agg_method, n_comps, signflip
             w = coeff(:, 1:n_comps);
         case 'avg'
             roi_data = mean(voxel_data(:, :), 2);
-        case 'avg-flip'
+            ev = NaN;
+            w = ones(size(voxel_data, 1), 1);
+        case {'avg-flip', 'w'}
             [n_samples, ~, n_dims] = size(voxel_data);
-            flipmask = repmat(signflip', n_samples, 1, n_dims);
-            roi_data = mean(voxel_data(:, :) .* flipmask(:, :), 2);
+            roi_data = zeros(n_samples, n_comps);
+
+            for i_comp = 1:n_comps
+                wmask = repmat(weights(:, i_comp)', n_samples, 1, n_dims);
+                roi_data(:, i_comp) = sum(voxel_data(:, :) .* wmask(:, :), 2);
+            end
+
+            ev = NaN;
+            w = weights;
         otherwise
             error(['Method ' agg_method ' is not supported for ROI time series aggregation']);
     end

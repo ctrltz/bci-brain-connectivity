@@ -12,8 +12,8 @@
 %        pipeline, subject, and session, [] if not analyzed
 %    ev_rois [pipelines x subjects x sessions x rois x 3] - variance
 %        explained by each of the SVD components
-%    w_rois {pipelines x subjects x sessions x rois} - weights for each of
-%        the SVD components
+%    w_rois {pipelines x subjects x sessions x rois} - source weights for
+%        each of the ROI aggregation methods
 %    freqs [freqs x 1] - frequencies corresponding to the bins
 %%%
 
@@ -27,9 +27,9 @@ ev_rois = zeros(n_multiverse, n_subjects, n_sessions, n_rois, n_roi_comps);
 w_rois = cell(n_multiverse, n_subjects, n_sessions, n_rois);
 
 parfor (subject = 1:n_subjects, num_workers)
-%     for subject = 1:12 
+% for subject = 1:12 
     for session = 1:n_sessions
-%         for session = 1
+%     for session = 1
         filename = ['S' num2str(subject) '_Session_' num2str(session) '.set'];
         if ~exist([datapath filename], 'file')
             warning("Skipping subject %d session %d - file not found\n", subject, session);
@@ -73,13 +73,30 @@ parfor (subject = 1:n_subjects, num_workers)
             agg = pipeline.agg;
             [roi_data, ev, w] = sensor2roi(data_epo, sa, A_inv, agg.method, agg);
             roi_data = roi_data(:, :);   % merge roi & comp axes
-                
-            spec_rois{i_pipeline, subject, session} = pwelch(...
-                roi_data, nfft, noverlap, nfft, srate)';
-            if strcmp(agg.method, 'svd') && agg.n_comps == 3  % save info from 3SVD
+            
+            % save explained variance (3SVD only) and source weights (all
+            % pipelines)
+            if strcmp(agg.method, 'svd') && agg.n_comps == 3
                 ev_rois(i_pipeline, subject, session, :, :) = ev;
-                w_rois(i_pipeline, subject, session, :) = w;
             end
+            w_rois(i_pipeline, subject, session, :) = w;
+
+            % Broadband - directly calculate the spectra (see below), 
+            % narrowband - apply the spatial filter to broadband data first
+            if contains(multiverse_labels{i_pipeline}, 'nb')
+                EEG_condition = extract_condition_EEG(EEG, EEG_narrow, ...
+                    {classes_to_analyze, 'rest', 'bb'}, events, windows);
+                data_epo = double(EEG_condition.data); 
+
+                agg_mod = agg;
+                agg_mod.method = 'w';
+                agg_mod.weights = w;
+                [roi_data, ev, w] = sensor2roi(data_epo, sa, A_inv, agg_mod.method, agg_mod);
+                roi_data = roi_data(:, :);   % merge roi & comp axes
+            end
+
+            spec_rois{i_pipeline, subject, session} = pwelch(...
+                    roi_data, nfft, noverlap, nfft, srate)';
         end
                    
         analyzed_sessions(subject, session) = 1;

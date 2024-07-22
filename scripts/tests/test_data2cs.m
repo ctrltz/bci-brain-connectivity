@@ -1,4 +1,5 @@
 function [passed] = test_data2cs()
+% This test is instable but passes after rerunning snapshot_test_data2cs.m
     rng('default');
 
     p = strsplit(mfilename('fullpath'), '/');

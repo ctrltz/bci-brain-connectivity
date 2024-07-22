@@ -34,7 +34,7 @@ load_sanity <- function (datapath) {
   levels(conn_df$Band) <- c("BB")
   levels(conn_df$ROI_Agg) <- c("1SVD", "3SVD", "AVG-F", "mask/1SVD", "mask/3SVD", "mask/AVG-F")
   levels(conn_df$ROI_Method) <- c("1SVD", "3SVD", "AVG-F")
-  levels(conn_df$Mask) <- c("No Mask", "Mask")
+  levels(conn_df$Mask) <- c("Anatomical", "Task-based")
 
   list(data, conn_df)
 }
@@ -85,15 +85,10 @@ load_multiverse <- function (datapath) {
   levels(results$Band) <- c("BB", "NB")
   levels(results$ROI_Agg) <- c("1SVD", "3SVD", "AVG-F", "mask/1SVD", "mask/3SVD", "mask/AVG-F")
   levels(results$ROI_Method) <- c("1SVD", "3SVD", "AVG-F")
-  levels(results$Mask) <- c("No Mask", "Mask")
+  levels(results$Mask) <- c("Anatomical", "Task-based")
 
   # Log-scale the SNR to make the distribution closer to normal and use dB
   results$LogSNR <- 10*log10(results$SNR)
-
-  # Select only broad-band pipelines for analyses that include only SNR and no connectivity
-  # since SNR was computed for broad-band data and copied to narrow-band analogues.
-  results_SNR <- results[grepl("/bb/", results$Pipeline, fixed = T),]
-  results_SNR$Pipeline <- factor(results_SNR$Pipeline)
 
   # Extract description of the pipelines
   pipeline_desc <- results %>%
@@ -103,35 +98,11 @@ load_multiverse <- function (datapath) {
              ~ .x[[1]]
       ))
 
-  list(results, results_SNR, pipeline_desc)
+  list(results, pipeline_desc)
 }
 
 
 ### Statistical analyses
-
-
-scaleAndFitLME <- function (x, formula, columns_to_scale,
-                            REML = T) {
-  # Fit linear mixed model after scaling the columns
-  #
-  # Parameters:
-  #   x - dataset
-  #   formula - mixed model equation
-  #   columns_to_scale - list of columns to scale
-  #   REML - whether to use REML criterion for optimization
-  #
-  # Returns:
-  #   fm - fitted model
-  
-  # Scale values within each pipeline separately
-  for (col in columns_to_scale) {
-    x[col] <- scale(x[col])
-  }
-
-  # Fit the linear mixed model
-  fm <- lmer(formula = formula, data = x, REML = REML)
-  fm
-}
 
 
 has_converged <- function(fm) {
@@ -152,6 +123,34 @@ has_converged <- function(fm) {
     isSingular(fm)
   }
 }
+
+
+scaleAndFitLME <- function (x, formula, columns_to_scale, refit = F) {
+  # Fit linear mixed model after scaling the columns
+  #
+  # Parameters:
+  #   x - dataset
+  #   formula - mixed model equation
+  #   columns_to_scale - list of columns to scale
+  #   refit - whether to try ML instead of REML if did not converge
+  #
+  # Returns:
+  #   fm - fitted model
+  
+  # Scale values within each pipeline separately
+  for (col in columns_to_scale) {
+    x[col] <- scale(x[col])
+  }
+
+  # Fit the linear mixed model
+  fm <- lmer(formula = formula, data = x, REML = T)
+  if (refit && !has_converged(fm)) {
+    message('LME did not converge, refitting without REML')
+    fm <- lmer(formula = formula, data = x, REML = F)
+  }
+  fm
+}
+
 
 restoreBetas <- function(beta0, beta1, data, x, y) {
   # Convert betas calculated using standardized data back to original scale
@@ -290,7 +289,7 @@ fitMultiverseSplitBetweenPartial <- function(df, params, pipeline_desc) {
 }
 
 
-fitMultiverseSplitLME <- function(df, params, pipeline_desc, REML = T) {
+fitMultiverseSplitLME <- function(df, params, pipeline_desc, refit = F) {
   # Estimate within-subject effects in the split multiverse analysis
   #
   # Parameters:
@@ -306,7 +305,7 @@ fitMultiverseSplitLME <- function(df, params, pipeline_desc, REML = T) {
   
   message(paste('fitMultiverseSplitLME:', params$formula_split))
   fms <- by(df, df$Pipeline, scaleAndFitLME,
-            params$formula_split, params$cols.scale, REML = REML)
+            params$formula_split, params$cols.scale, refit = refit)
   coefs <- do.call(rbind, lapply(fms,
                                  \(fm) unlist(lmerTest:::get_coefmat(fm)[params$predictor,]))) %>%
     as.data.frame() %>%
@@ -323,7 +322,7 @@ fitMultiverseSplitLME <- function(df, params, pipeline_desc, REML = T) {
 }
 
 
-fitMultiverseJointLME <- function(df, params) {
+fitMultiverseJointLME <- function(df, params, refit = F) {
   # Estimate within-subject effects in the joint multiverse analysis
   #
   # Parameters:
@@ -336,7 +335,7 @@ fitMultiverseJointLME <- function(df, params) {
   #     and p-values
   
   message(paste("fitMultiverseJointLME:", params$formula_joint))
-  fm <- scaleAndFitLME(df, params$formula_joint, params$cols.scale)
+  fm <- scaleAndFitLME(df, params$formula_joint, params$cols.scale, refit = refit)
   ci <- confint(fm)
   coefs <- unlist(lmerTest:::get_coefmat(fm)[params$predictor,]) %>%
     t() %>% as.data.frame() %>%
@@ -376,7 +375,10 @@ getSummary <- function(params, split_stats, joint_stats, commonFields) {
       predictor = params$predictor,
       response = params$response,
       type = params$measure.type,
-      split_significant = sum(split_sel$Significant),
+      split_significant = sum(split_sel$Significant.MC),
+      # NOTE: the formula below is also used separately in two lines of multiverse_SNR.R
+      split_significant_samedir = sum(split_sel$Significant.MC &
+                                      (split_sel$t.value * joint_sel$t.value > 0)),
       split_total = length(split_sel$Significant),
       split_t.value = mean(split_sel$t.value),
       joint_estimate = joint_sel$Estimate,
@@ -390,175 +392,6 @@ getSummary <- function(params, split_stats, joint_stats, commonFields) {
     ),
     commonFields
   )
-}
-
-
-###
-# Plotting
-###
-
-
-plotPipelineHistograms <- function(data, param, nrow, plot.path, prefix, width, height) {
-  # Density plots of estimated values for different pipelines
-  #
-  # Parameters:
-  #   data - data frame
-  #   param - list with variable to plot (param$x) and filename (param$name)
-  #   nrow - number of rows for facet wrap
-  #   plot.path - where to save the plots
-  #   prefix - prefix of the filename
-  #   width, height - parameters for ggsave
-  
-  p <- ggplot(data, mapping = aes(x = .data[[param$x]])) +
-    geom_histogram(mapping = aes(y = after_stat(density)),
-                   bins = 50, alpha = 0.5) +
-    geom_density() +
-    facet_wrap(. ~ Pipeline, nrow = nrow) +
-    plot_theme
-
-  output_filename <- file.path(plot.path,
-                               paste(prefix, param$name, sep = ''))
-  ggsave(output_filename, p, width = width, height = height)
-}
-
-
-plotMultiverseBase <- function(df, val, sig, rows, cols, facet_rule,
-                               val.name = 'Estimate', sig.name = 'Significant', 
-                               lim = NULL, shapes = c("TRUE" = 16, "FALSE" = 1),
-                               fontface = c('bold', 'plain'), strip.y.angle = 90) {
-  # Plot the results of the multiverse analysis as a table for facilitating
-  # visual comparison of results of different pipelines. Color codes the 
-  # continuous value of interest (e.g., beta, t or correlation coefficient), 
-  # dots indicate the significance of the effect of interest.
-  #
-  # The idea behind this function is to use nested rows and columns for coding
-  # different pipeline steps. It is expected that the pipeline has at least
-  # two steps (x and y), additional steps might be provided as a facet_rule
-  #
-  # Example: 
-  #   pipeline: A -> B -> C -> D
-  #   desired output: rows code B1, ..., Bn, grouped by A1, ..., An
-  #                   columns code D1, ..., Dn, grouped by C1, ..., Cn
-  #   arguments: x = D, y = B, facet_rule = A ~ C
-  #
-  # Parameters:
-  #   df - data frame
-  #   val - column to use for displaying the value of interest
-  #   sig - column to use for displaying significance of the results
-  #   rows, cols - pipeline steps (lowest level of hierarchy)
-  #   facet_rule - pipeline steps (higher levels of hierarchy, 
-  #                                cols3 + cols2 ~ rows3 + rows2)
-  #   val.name - colorbar title for the value
-  #   sig.name - legend title for the significance
-  #   lim - data limit (calculated automatically if not provided)
-  #   shapes - how to display significance
-  #   fontface - optional styling for nested pipeline levels
-  #   strip.y.angle - optional rotation of y labels
-  # 
-  # Returns:
-  #   ggplot
-  
-  # Calculate data limits if not provided manually
-  if (is.null(lim)) {
-    lim = ceilingn(max(abs(df[,val])), 2)
-  }
-
-  # Calculate the number of terms in both sides of the facet rule
-  facet_formula <- as.formula(facet_rule)
-  parts <- unlist(strsplit(as.character(facet_formula), ' ~ '))
-  n_lhs <- length(unlist(strsplit(parts[1], '[+]')))
-  n_rhs <- length(unlist(strsplit(parts[2], '[+]')))
-
-  # Prepare the main plot, colormap can be adapted separately
-  p <- ggplot(df, aes(x = .data[[cols]], y = .data[[rows]])) +
-    geom_raster(aes(fill = .data[[val]])) +
-    geom_point(aes(shape = .data[[sig]]), color = "black",
-               size = 3, fill = NA, stroke = 1) +
-    scale_shape_manual(labels = c('TRUE' = 'Yes', 'FALSE' = 'No'),
-                       limits = c('TRUE', 'FALSE'), values = shapes, drop = FALSE,
-                       guide = guide_legend(ncol = 1, order = 2,
-                                            title = sig.name, title.position = 'top')) +
-    scale_x_discrete(position = "top") +
-    scale_y_discrete(limits = rev) +
-    guides(fill = guide_colorbar(order = 1, title.position = 'top')) +
-    facet_nested(facet_formula, switch = "y",
-                 strip = strip_nested(
-                   text_x = elem_list_text(face = tail(fontface, n_rhs)),
-                   text_y = elem_list_text(face = tail(fontface, n_lhs),
-                                           angle = strip.y.angle),
-                   by_layer_x = T, by_layer_y = T
-                 )) +
-    labs(fill = val.name) +
-    theme_classic() +
-    theme(
-      axis.line.x = element_blank(),
-      axis.ticks.x = element_blank(),
-      axis.title.x = element_blank(),
-      axis.line.y = element_blank(),
-      axis.ticks.y = element_blank(),
-      axis.title.y = element_blank(),
-      legend.position = "bottom",
-      panel.spacing = unit(0, "lines"),
-      strip.background = element_blank(),
-      strip.placement = "outside"
-    )
-
-  p
-}
-
-
-plotMultiverseSplit <- function(df, val, sig, facet_rule, 
-                                val.name = 'Estimate', lim = NULL) {
-  # Plot the results of the split multiverse analysis
-  # (setting up the appearance)
-  #
-  # Parameters:
-  #   df - data frame
-  #   val - column to use for displaying the value of interest
-  #   sig - column to use for displaying significance of the results
-  #   facet_rule - pipeline steps (higher levels of hierarchy, 
-  #                                cols3 + cols2 ~ rows3 + rows2)
-  #   val.name - legend title for the value of interest
-  #   lim - data limit (calculated automatically if not provided)
-  #
-  # Returns:
-  #   ggplot
-  
-  if (is.null(lim)) {
-    lim = ceilingn(max(abs(df[,val])), 2)
-  }
-  
-  p <- plotMultiverseBase(df, val, sig, 'Inverse', 'ROI_Method', 
-                          facet_rule, val.name = val.name, lim = lim)
-  
-  p + scale_fill_gradient2(low = muted("blue"), high = muted("red"),
-                           limits = c(-lim, lim), breaks = c(-lim, 0, lim)) +
-    guides(y = guide_axis(angle = 90))
-}
-
-
-plotMultiverseJoint <- function(df, val, sig, facet_rule, lim = NULL) {
-  # Plot the results of the joint multiverse analysis
-  # (setting up the appearance)
-  #
-  # Parameters:
-  #   df - data frame
-  #   val - column to use for displaying the value of interest
-  #   sig - column to use for displaying significance of the results
-  #   facet_rule - pipeline steps (higher levels of hierarchy, 
-  #                                cols3 + cols2 ~ rows3 + rows2)
-  #   lim - data limit (calculated automatically if not provided)
-  #
-  # Returns:
-  #   ggplot
-  
-  p <- plotMultiverseBase(df, val, sig, 'DummyY', 'DummyX', facet_rule, 
-                          lim = lim, val.name = 'Consistency', strip.y.angle = 0)
-
-  p + scale_fill_gradient2(low = "#FD8060", mid = "#FEE191", high = "#B0D8A4", 
-                           midpoint = 0.5, limits = c(0, lim)) +
-    theme(axis.text.x = element_blank(),
-          axis.text.y = element_blank())
 }
 
 
@@ -586,8 +419,11 @@ format.pval <- function(p.value, threshold, digits) {
 }
 
 
-formula2tex <- function(formula, rename_mapping = c("LogSNR" = "SNR", "Inverse" = "Inv.",
-                                                    "ROI_Method" = "ROI")) {
+formula2tex <- function(formula, rename_mapping = c("LogSNR" = "SNR", 
+                                                    "Band" = "Filt.",
+                                                    "Inverse" = "Inv.",
+                                                    "Mask" = "ROI", 
+                                                    "ROI_Method" = "Extr.")) {
   # Export linear mixed model formulas to TeX while renaming some of the factors
   #
   # Parameters:
@@ -597,6 +433,7 @@ formula2tex <- function(formula, rename_mapping = c("LogSNR" = "SNR", "Inverse" 
   result <- as.character(formula)
   result <- gsub("~", "$\\sim$", result, fixed = T)
   result <- gsub("|", "$|$", result, fixed = T)
+  result <- gsub("^2", "$^2$", result, fixed = T)
   result <- str_replace_all(result, rename_mapping)
 
   result
@@ -641,4 +478,19 @@ ceilingn <- function(x, digits) {
   #   the rounded value
   
   ceiling(x * 10 ^ digits) / 10 ^ digits
+}
+
+
+checkOutliers <- function(x, threshold = 4) {
+  # Scale the data and check which elements are further than threshold SDs away
+  # from the mean
+  #
+  # Parameters:
+  #   x - value
+  #   threshold - how many SDs it takes to be considered as an outlier
+  #
+  # Returns:
+  #   T/F vector for each element (T = is an outlier)
+  
+  abs(scale(x) >= threshold)
 }

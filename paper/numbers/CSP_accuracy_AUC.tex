@@ -1,0 +1,29 @@
+% Group-level t-tests for accuracy and AUC
+\newcommand{\cspGroupTTestSummary}{
+\begin{tabular}{ccccccc}
+\toprule
+Metric & Period & Mean & t-value & df & p-value & 95\% CI\\
+\midrule
+ & rest & 0.51 & 2.04 & 61 & \textbf{0.046} & $[0.50,0.51]$\\
+ & target & 0.66 & 11.78 & 61 & \textbf{$<$0.001*} & $[0.63,0.68]$\\
+\multirow{-3}{*}{\centering\arraybackslash Accuracy} & feedback & 0.69 & 12.42 & 61 & \textbf{$<$0.001*} & $[0.66,0.72]$\\
+\cmidrule{1-7}
+ & rest & 0.51 & 2.19 & 61 & \textbf{0.032} & $[0.50,0.52]$\\
+ & target & 0.70 & 12.71 & 61 & \textbf{$<$0.001*} & $[0.67,0.73]$\\
+\multirow{-3}{*}{\centering\arraybackslash AUC} & feedback & 0.73 & 13.57 & 61 & \textbf{$<$0.001*} & $[0.70,0.77]$\\
+\bottomrule
+\end{tabular}}
+
+% Between-Subject Correlation
+
+\newcommand{\cspCorrAccuracyBetween}{0.71}
+\newcommand{\cspCorrAccuracyBetweenCIMin}{0.56}
+\newcommand{\cspCorrAccuracyBetweenCIMax}{0.81}
+\newcommand{\cspCorrAUCBetween}{0.7}
+\newcommand{\cspCorrAUCBetweenCIMin}{0.55}
+\newcommand{\cspCorrAUCBetweenCIMax}{0.81}
+
+% Within-Subject Correlation
+
+\newcommand{\cspCorrAccuracyWithin}{0.57}
+\newcommand{\cspCorrAUCWithin}{0.55}

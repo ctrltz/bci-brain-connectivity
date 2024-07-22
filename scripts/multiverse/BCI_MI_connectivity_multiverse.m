@@ -1,6 +1,6 @@
 %%%
 % Estimate within- and across-hemisphere phase synchronization for all
-% pipelines in the multiverse analysis
+% pipelines in the multiverse analysis (Fourier estimation only)
 %
 % Outputs:
 %
@@ -79,11 +79,25 @@ parfor (subject = 1:n_subjects, num_workers)
                     error('bad inverse method')
             end
 
+            %% Prepare the ROI weights
+            % Get the data for all combinations of parameters
+            agg = pipeline.agg;
+            [~, ~, w] = sensor2roi(data_epo, sa, A_inv, agg.method, agg);
+            
+            %% Update the agg structure
+            agg_mod = agg;
+            agg_mod.method = 'w';
+            agg_mod.weights = w;
+
             %% Connectivity Calculation
+            % Use broadband data as the weights are already computed
+            EEG_condition = extract_condition_EEG(EEG, EEG_narrow, ...
+                {classes_to_analyze, 'rest', 'bb'}, events, windows);
+            data_epo = double(EEG_condition.data); 
+
             % Get the data for all combinations of parameters
             [~, ~, n_trials] = size(data_epo);
-            agg = pipeline.agg;
-            roi_data = sensor2roi(data_epo, sa, A_inv, agg.method, agg);
+            roi_data = sensor2roi(data_epo, sa, A_inv, agg_mod.method, agg_mod);
             roi_data = roi_data(:, :);   % merge roi & comp axes
             % NOTE: in 3SVD case the order is the following (first digit is
             % the index of the ROI, the index of the SVD component)
@@ -94,13 +108,8 @@ parfor (subject = 1:n_subjects, num_workers)
             roi_data_ep = reshape(roi_data', n_chans, [], n_trials);
 
             % calculate cross-spectra
-            if strcmp(pipeline.band, 'bb')
-                tmp_cs = data2cs_bb(roi_data_ep, fres, 1);                            
-                band_freqs = band_freqbins;
-            else
-                tmp_cs = data2cs_nb(roi_data_ep, 1);                            
-                band_freqs = [];
-            end
+            tmp_cs = data2cs_bb(roi_data_ep, fres, 1);                            
+            band_freqs = band_freqbins;
 
             % calculate coherency
             tmp_cohy = cs2coh(tmp_cs);

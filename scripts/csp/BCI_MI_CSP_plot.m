@@ -4,8 +4,9 @@
 %
 % Outputs:
 % 1. colors.mat - cm17 colormap and colors of ROI to use in R
-% 2. fig3-group-csp-source-space-mask.png - CSP figure
-% 3. fig2b-roi-definition.png - panel with anatomical and task-based ROIs
+% 2. fig4-group-csp-source-space-mask.png - CSP figure
+% 3. assets/roi-definition-anatomical.png
+% 4. assets/roi-definition-task-based.png
 %%%
 
 %% Prepare data for the figure
@@ -117,8 +118,11 @@ ax.Position(2) = ax.Position(2) + ax.Position(4);
 ax.Position(4) = 0;
 ax.Colorbar.Position = [0.565 0.275 0.11 0.02];
 colormap(cm17); % re-paint CSP patterns
-exportgraphics(h, [savepath_group_csp 'fig3-group-csp-source-space-mask.png'], ...
+exportgraphics(h, [savepath_group_csp 'fig4-group-csp-source-space-mask.png'], ...
     'Resolution', 500);
+if (run_cmd)
+    close(h);
+end
 
 %% Plots for the Figure 3
 % Highlight voxels from the target ROIs with values from -1 to 1
@@ -136,22 +140,25 @@ for i_roi = 1:numel(ROI_inds)
     roi_csp_mask(mask_roi) = values(i_roi);
 end
 
-h = figure('Position', [10 10 600 500]);
 % Anatomical ROI definitions
-ax = subplot(121);
+h = figure('Position', [10 10 500 250]);
+ax = gca;
 allplots_cortex_subplots(sa, cort5K2full(roi_anatomical_mask, sa), [-1 1], ...
     cm17, 'CSP-L', 1, 'views', 5, 'ax', ax);
-text(0.5, 1.2, 'Anatomical', 'Units', 'normalized', ...
-    'HorizontalAlignment', 'center', 'FontSize', 18, ...
-    'FontName', 'Arial');
+exportgraphics(h, [cfg.asset.base 'roi-definition-anatomical.png']);
+if (run_cmd)
+    close(h);
+end
+
 % CSP-masked ROI definitions
-ax = subplot(122);
+h = figure('Position', [10 10 500 250]);
+ax = gca;
 allplots_cortex_subplots(sa, cort5K2full(roi_csp_mask, sa), [-1 1], ...
     cm17, 'CSP-L', 1, 'views', 5, 'ax', ax);
-text(0.5, 1.2, 'Task-based', 'Units', 'normalized', ...
-    'HorizontalAlignment', 'center', 'FontSize', 18, ...
-    'FontName', 'Arial');
-exportgraphics(h, [cfg.asset.base 'fig2b-roi-definition.png']);
+exportgraphics(h, [cfg.asset.base 'roi-definition-task-based.png']);
+if (run_cmd)
+    close(h);
+end
 
 %% Export the colors to use them in R
 colors = struct();

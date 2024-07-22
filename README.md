@@ -1,7 +1,5 @@
 ## BCI & Brain Connectivity
 
-[![DOI](https://zenodo.org/badge/688030003.svg)](https://zenodo.org/badge/latestdoi/688030003)
-
 This repository contains the code for the multiverse analysis of SNR and EEG-based functional connectivity in the context of sensorimotor BCI training. Please refer to the accompanying paper for details and cite it if you use the code from this repository:
 
 > Kapralov, N., Jamshidi Idaji, M., Stephani, T., Studenova, A., Vidaurre, C., Ros., T., Villringer, A., Nikulin, V., 2023. Sensorimotor brain-computer interface performance depends on signal-to-noise ratio but not connectivity of the mu rhythm in a multiverse analysis of longitudinal data. bioRxiv. doi:[10.1101/2023.09.30.558407](https://doi.org/10.1101/2023.09.30.558407)
@@ -12,6 +10,7 @@ This repository contains the code for the multiverse analysis of SNR and EEG-bas
 
  * [[link](https://github.com/bbci/bbci_public)] Berlin Brain-Computer Interface (BBCI) toolbox. **NOTE**: `toolboxes/BTB/BTB.mat` is provided for the BBCI toolbox to run. 
  * [[link](https://sccn.ucsd.edu/eeglab/download.php)] EEGLAB 2021.0. **NOTE**: The toolbox was manually set to [use double precision](https://eeglab.org/tutorials/misc/EEGLAB_option_menu.html) in order to avoid problems when analyzing data outside of EEGLAB.
+ * [[link](https://research.ics.aalto.fi/ica/fastica/code/FastICA_2.5.zip)] FastICA v2.5 (only required if performing preprocessing from scratch)
  * [[link](https://www.parralab.org/nyhead/sa_nyhead.mat)] Pre-computed New York Head model
  * [[link](https://github.com/fooof-tools/fooof_mat)] MATLAB Wrapper for FOOOF 
  * [[link](https://github.com/jadref/tprod)] tprod toolbox. **NOTE**: apparently, it is problematic to compile this toolbox in the newer versions of MATLAB - one could either do it in previous versions or try to use the compiled files from this repository.
@@ -22,7 +21,7 @@ This repository contains the code for the multiverse analysis of SNR and EEG-bas
 
 4. Local LaTeX environment for compiling the final PDF of the paper and supplementary material.
 
-5. [Optional] For `Makefile` to be useful, a Linux-based OS is required with the following utilities: `wget`, `unzip`, `curl`.
+5. [Optional] For the `Makefile` to be useful, a Linux-based OS is required with the following utilities: `wget`, `unzip`, `curl`.
 
 ### Folder Structure
 
@@ -32,7 +31,7 @@ This repository contains the code for the multiverse analysis of SNR and EEG-bas
   * `aux` - preprocessing info
   * `preproc`
     * `task1` - preprocessed data
-    * `replication` - intermediate results
+  * `derivatives` - intermediate results
 * `paper` - everything that is required for LaTeX
   * `figures` - here the generated figures are collected
   * `numbers` - here the generated output is collected

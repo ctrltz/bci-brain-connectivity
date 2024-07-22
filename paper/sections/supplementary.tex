@@ -1,3 +1,109 @@
+\section{Comparison of online accuracy in different cursor control tasks} \label{sec:task_comparison}
+
+We compared the performance of participants in three cursor control tasks using Pearson's correlation coefficient (Fig. \ref{fig:task_comparison}). Both between-subject and median within-subject correlations were high (Tab. \ref{tab:task_comparison}), suggesting that participants performed similarly in all tasks. Still, differences in the underlying mechanisms might be observed between tasks as shown by \cite{Stieger2020_analysis}. In particular, successful performance in the second task (cursor control based on total alpha power) was associated with widespread changes in alpha power during relaxation, while the first task (cursor control based on alpha lateralization) was more tightly related to the sensorimotor areas.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{cccc}
+        \toprule
+        Tasks & \multicolumn{2}{c}{Between-subject} & Within-subject \\
+        & Correlation & 95 \% CI & Median correlation\\
+        \midrule
+        Task 1 $\sim$ Task 2 & $\metadataCorrFirstSecondTask$ & $[\metadataCorrFirstSecondTaskCIMin, \metadataCorrFirstSecondTaskCIMax]$ & $\metadataCorrWithinFirstSecondTask$ \\
+        Task 1 $\sim$ Task 3 & $\metadataCorrFirstThirdTask$ & $[\metadataCorrFirstThirdTaskCIMin, \metadataCorrFirstThirdTaskCIMax]$ & $\metadataCorrWithinFirstThirdTask$ \\
+        Task 2 $\sim$ Task 3 & $\metadataCorrSecondThirdTask$ & $[\metadataCorrSecondThirdTaskCIMin, \metadataCorrSecondThirdTaskCIMax]$ & $\metadataCorrWithinSecondThirdTask$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Between-subject and within-subject correlations of performance in the cursor control tasks.}
+    \label{tab:task_comparison}
+\end{table}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{figAsupp1-task-comparison.png}
+    \caption{Comparison of performance in the cursor control tasks. (A) Between-subject comparison. Each point corresponds to a single subject and reflects average accuracy over all sessions. (B) Within-subject comparison. Each point corresponds to a single subject and reflects correlation of this subject's performance in different sessions for each pair of tasks.}
+    \label{fig:task_comparison}
+\end{figure}
+
+\section{Comparison of online accuracy and offline estimates of performance} \label{sec:csp_accuracy_auc}
+
+\subsection{Methods}
+
+We used a combination of CSP (Common Spatial Pattern; \cite{Ramoser2000}) and regularized LDA (Latent Discriminant Analysis; \cite{LDA_Friedman1989}) to distinguish between trials corresponding to left- and right-hand imaginary movements. The classification was performed using EEG data from three time windows (Fig. \ref{main-fig:study_overview}B, main text; rest: [0.49, 1.99] s of the inter-trial interval, target: [0.49, 1.99] s of the target presentation interval, feedback: [-1.51, -0.01] s relative to the end of the feedback interval) after filtering in 9-15 Hz frequency band. For both CSP and rLDA, we used implementations from the BBCI toolbox \citep{Blankertz2016}.
+
+\medskip
+
+For each time window, we first fitted CSP and selected three components for each type of the imaginary movement (i.e., three components with the smallest and three with the largest eigenvalues). For each CSP component, we estimated the variance of the corresponding time series in the time window of interest. Then, we trained a regularized LDA using the log-variance values as features. The regularization parameter of LDA was set to 0.05. We estimated \textit{offline} accuracy and area under the receiver operating characteristic curve (AUC) of the classifier for each subject and training session separately using 6-fold cross-validation. To compare online accuracy and offline estimates of performance, we used Pearson's correlation coefficient.
+
+\subsection{Results}
+
+The results of the analysis are presented in Fig. \ref{fig:csp_accuracy_auc}. During the inter-trial interval (labeled as rest), both accuracy (Fig. \ref{fig:csp_accuracy_auc}-A) and AUC (Fig. \ref{fig:csp_accuracy_auc}-D) were not significantly different from chance level of 0.5 after correction for multiple comparisons. At the same time, both accuracy and AUC increased and became significantly higher than chance level when the data during the target presentation and feedback intervals were used for training the classifier. The detailed statistical results are presented in the Table \ref{tab:csp_group_ttest}.
+
+\medskip
+
+For comparison with the online accuracy, we selected offline estimates based on EEG data from the feedback interval. We observed high correlation between online accuracy and offline performance metrics (accuracy: $\rho = \cspCorrAccuracyBetween, 95\%~\text{CI:}~[\cspCorrAccuracyBetweenCIMin, \cspCorrAccuracyBetweenCIMax]$, AUC: $\rho = \cspCorrAUCBetween, 95\%~\text{CI:}~[\cspCorrAUCBetweenCIMin, \cspCorrAUCBetweenCIMax]$) on the between-subject level (Fig. \ref{fig:csp_accuracy_auc}-B and -E). On the within-subject level (Fig. \ref{fig:csp_accuracy_auc}-C and -F), the correlation was subject-specific but still relatively high for the majority of participants (median within-subject correlations for accuracy and AUC were $\cspCorrAccuracyWithin$ and $\cspCorrAUCWithin$, respectively). Overall, these results suggest that the main findings of the paper should still hold if offline accuracy or AUC is used as the metric of performance.
+
+\medskip
+
+\begin{table}[htbp]
+    \centering
+    \cspGroupTTestSummary
+    \caption{Summary of the observed differences between CSP-based ('Mean' column) and chance level (0.5) values of accuracy and AUC in three time windows of interest (rest: [0.49, 1.99] s of the inter-trial interval, target: [0.49, 1.99] s of the target presentation interval, feedback: [-1.51, -0.01] s relative to the end of the feedback interval). Significant p-values are highlighted in bold, and stars indicate that the differences remained significant after Bonferroni correction for multiple ($m$ = 3) comparisons due to considering three time windows.}
+    \label{tab:csp_group_ttest}
+\end{table}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figBsupp1-csp-accuracy-auc.png}
+    \caption{Values of offline accuracy and AUC obtained using CSP and regularized LDA in a 6-fold cross-validation. (A) Average accuracy for each subject in different time periods. No prediction during the inter-trial interval (rest) was possible, while both target presentation and feedback intervals allowed predicting the type of the imaginary movement. (B) Between-subject comparison of online and offline accuracy showed high correlation between the measures. Each point corresponds to a single subject. (C) Raincloud plot of within-subject correlation of online and offline accuracy. Each point corresponds to a single subject. (D-F) Same as (A-C) but for AUC instead of offline accuracy. Each triangle corresponds to a single subject.}
+    \label{fig:csp_accuracy_auc}
+\end{figure}
+
+\newpage
+
+\section{Laplacian-based analysis of phase synchronization} \label{sec:laplace_connectivity}
+
+\subsection{Methods}
+
+In order to make the Laplacian-based analysis of phase synchronization (PS) comparable to the source space one, we considered four channels (C3, C4, CP3, CP4), which are located directly over the pre- and postcentral gyri of both hemispheres. For CP3 and CP4, the surface Laplacian was applied by subtracting the average of neighboring channels CP1, CP5, C3, P3 and CP2, CP6, C4, P4, respectively. Values of PS were averaged over within-hemisphere (C3-CP3 and C4-CP4) and across-hemisphere (C3-C4, C3-CP4, CP3-C4, and CP3-CP4) connections. Values of SNR were averaged over all four channels and used in statistical analysis to correct for the effect of SNR on PS.
+
+\subsection{Results}
+
+The detailed statistical results are presented in Table \ref{tab:laplace_connectivity_summary}. In particular, Laplace SNR had a significant effect on all PS measures except across-hemisphere LagCoh and coherence (Fig. \ref{fig:laplace_snr_connectivity}). Among all PS measures, only within-hemisphere coherence had a significant positive effect on BCI performance after correction for SNR and multiple comparisons (Fig. \ref{fig:laplace_connectivity_performance}). However, since neither ImCoh nor LagCoh showed a significant effect in the same analysis, the effect of coherence is likely to be driven by a zero-lag interaction and potentially by volume conduction. Finally, no evidence of longitudinal changes was observed for all PS measures before and after correction for SNR (Fig. \ref{fig:laplace_connectivity_longitude}). Overall, the observed results were very similar to the ones obtained with source space analysis.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figCsupp1-laplace-snr-connectivity.png}
+    \caption{Laplace SNR had a significant effect on all measures of phase synchronization (PS) except across-hemisphere LagCoh and coherence.}
+    \label{fig:laplace_snr_connectivity}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figCsupp2-laplace-connectivity-performance-within.png}
+    \caption{Among all PS measures, only within-hemisphere coherence had a significant positive effect on BCI performance after correction for SNR and multiple comparisons.}
+    \label{fig:laplace_connectivity_performance}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figCsupp3-laplace-connectivity-longitude.png}
+    \caption{No evidence of longitudinal changes was observed for all measures of PS before and after correction for Laplace SNR.}
+    \label{fig:laplace_connectivity_longitude}
+\end{figure}
+
+\begin{table}[htbp]
+    \small
+    \centering
+    \laplaceConnectivitySummary
+    \caption{Summary of the observed effects for the research questions in the Laplacian-based analysis of PS. Significant effects are highlighted in bold, and stars indicate that the effects remain significant after Bonferroni correction for multiple ($m = \numComparisons$) comparisons. WH and AH stand for within- and across-hemisphere values of PS metrics, respectively. Notation 'X $|$ SNR' in the 'Response' column reflects that the effect of predictor on X was controlled for SNR.}
+    \label{tab:laplace_connectivity_summary}
+\end{table}
+
+\newpage
+
+\section{Additional tables and figures}
+
 \begin{table}[htbp]
     \small
     \centering
@@ -16,27 +122,55 @@
     \small
     \centering
     \resizebox{\linewidth}{!}{\multiverseRestSummary}
-    \caption{Summary of the observed effects for the research questions in the joint multiverse analysis. Significant effects are highlighted in bold, and stars indicate that the effects remain significant after Bonferroni correction for multiple ($m = \numComparisons$) comparisons. WH and AH stand for within- and across-hemisphere values of PS metrics, respectively.}
+    \caption{Summary of the observed effects for the research questions in the joint multiverse analysis. Significant effects are highlighted in bold, and stars indicate that the effects remain significant after Bonferroni correction for multiple ($m = \numComparisons$) comparisons. WH and AH stand for within- and across-hemisphere values of PS metrics, respectively. Notation 'X $|$ SNR' in the 'Response' column reflects that the effect of predictor on X was controlled for SNR.}
     \label{tab:multiverse_effects_summary}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \resizebox{\linewidth}{!}{\pipelineEffectsInteractionSummary}
+    \caption{Interactions between processing steps that were significant for SNR or some of the PS measures (listed in the 'Response' column). Significant p-values are highlighted in bold, and stars indicate that the interaction remained significant after correction for multiple comparisons.}
+    \label{tab:pipeline_effects_interactions}
 \end{table}
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{fig6supp1-multiverse-connectivity-performance-between-subject.png}
-    \caption{Between-subject effects of phase synchronization on performance as assessed with correlation (Not Corrected for SNR) and partial correlation (Corrected for SNR). Panels (A) and (B) correspond to within- and across-hemisphere phase synchronization, respectively. Bonferroni correction for multiple ($m = \numComparisons$) comparisons was applied.}
+    \includegraphics[width=\textwidth]{fig6supp-connectivity-spectra.png}
+    \caption{Grand average spectra of within- (top row) and across-hemisphere (bottom row) values of ImCoh, LagCoh, and coherence (columns: left to right) for the broadband pipelines with task-based definitions of ROIs and different ROI aggregation methods.}
+    \label{fig:multiverse_connectivity_spectra}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{fig7supp1-multiverse-connectivity-performance-between-subject.png}
+    \caption{Between-subject effects of phase synchronization on performance as assessed with correlation ($\rho$, Not Corrected for SNR) and partial correlation ($\rho_{partial}$, Corrected for SNR). Panels (A) and (B) correspond to within- and across-hemisphere phase synchronization, respectively. Bonferroni correction for multiple ($m = \numComparisons$) comparisons was applied. Correlation values are coded with color.}
     \label{fig:multiverse_connectivity_performance_between}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{fig6supp2-multiverse-connectivity-longitude.png}
-    \caption{Longitudinal changes in phase synchronization throughout the BCI training. Panels (A) and (B) correspond to within- and across-hemisphere phase synchronization, respectively. Bonferroni correction for multiple ($m = \numComparisons$) comparisons was applied.}
+    \includegraphics[width=0.9\textwidth]{fig7supp2-multiverse-connectivity-longitude.png}
+    \caption{Longitudinal changes in phase synchronization throughout the BCI training. Panels (A) and (B) correspond to within- and across-hemisphere phase synchronization, respectively. Bonferroni correction for multiple ($m = \numComparisons$) comparisons was applied. Fixed effects of session on phase synchronization ($\beta$) are coded with color.}
     \label{fig:multiverse_connectivity_longitude}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{fig8supp-snr-lcmv-eloreta.png}
-    \caption{The difference in SNR between pipelines that include LCMV and eLORETA was more pronounced for low values of SNR. Blue dashed lines depict the area, where values of SNR estimated with LCMV and eLORETA are equal. For points above this line, SNR is higher when LCMV is used for inverse modeling, and vice versa.}
-    \label{fig:snr_lcmv_eloreta}
+    \includegraphics[width=\textwidth]{fig9supp1-snr-band-inverse-interaction.png}
+    \caption{Interaction between filtering and the method for inverse modeling in the context of SNR. For broadband pipelines, LCMV led to higher values of SNR than eLORETA, and the difference was more pronounced for low values of SNR. For narrowband pipelines, SNR was higher when eLORETA was included in the pipeline. Blue dashed lines depict the area, where values of SNR estimated with LCMV and eLORETA are equal. For points above this line, SNR is higher when LCMV is used for inverse modeling, and vice versa. Each point corresponds to one training session.}
+    \label{fig:snr_band_inverse}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{fig9supp2-coh-within-mask-roi-method-interaction.png}
+    \caption{Interaction between the ROI definition and the method for extraction of ROI time series in the context of within-hemisphere coherence. When three SVD components per ROI were used, definition of the ROI had less impact on the coherence values compared to one SVD component or averaging with sign flip. Blue dashed lines depict the area, where values of coherence estimated with anatomical and task-based ROI definitions are equal. For points above this line, coherence is higher when task-based definitions are used, and vice versa. Each point corresponds to one training session.}
+    \label{fig:coh_within_mask_roi_method}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{fig9supp3-snr-inverse-band-interaction.png}
+    \caption{Interaction between filtering and the method for inverse modeling in the context of SNR. For pipelines that include eLORETA, SNR was higher when filtering in a narrow band was applied. At the same time, filtering decreased SNR for pipelines that include LCMV. Blue dashed lines depict the area, where values of SNR estimated with broadband and narrowband data are equal. For points above this line, SNR is higher when narrowband data is used, and vice versa. Each point corresponds to one training session.}
+    \label{fig:snr_inverse_band}
 \end{figure}

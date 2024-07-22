@@ -5,12 +5,45 @@
 \usepackage{geometry}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{array}
 \usepackage{xcolor}
 \usepackage{multirow}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage[final, defaultcolor=red]{changes}
 \usepackage[colorlinks=true]{hyperref}
+
+%----Helper code for dealing with external references----
+% (by cyberSingularity at http://tex.stackexchange.com/a/69832/226)
+% see also https://www.overleaf.com/learn/how-to/Cross_referencing_with_the_xr_package_in_Overleaf
+
+\usepackage{xr}
+\makeatletter
+
+\newcommand*{\addFileDependency}[1]{% argument=file name and extension
+\typeout{(#1)}% latexmk will find this if $recorder=0
+% however, in that case, it will ignore #1 if it is a .aux or 
+% .pdf file etc and it exists! If it doesn't exist, it will appear 
+% in the list of dependents regardless)
+%
+% Write the following if you want it to appear in \listfiles 
+% --- although not really necessary and latexmk doesn't use this
+%
+\@addtofilelist{#1}
+%
+% latexmk will find this message if #1 doesn't exist (yet)
+\IfFileExists{#1}{}{\typeout{No file #1.}}
+}\makeatother
+
+\newcommand*{\myexternaldocument}[1]{%
+\externaldocument[main-]{#1}%
+\addFileDependency{#1.tex}%
+\addFileDependency{#1.aux}%
+}
+%------------End of helper code--------------
+
+% Links to the external document
+\myexternaldocument{main}
 
 % Remove info about journal submission
 \journal{}
@@ -50,8 +83,10 @@
 
 \renewcommand{\thefigure}{S\arabic{figure}}
 \renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thesection}{\Alph{section}}
 \renewcommand{\theHtable}{Supplement.\thetable}
 \renewcommand{\theHfigure}{Supplement.\thefigure}
+\renewcommand{\theHsection}{Supplement.\thesection}
 
 \newcommand{\at}{@}
 \newcommand{\tofix}[1]{\textcolor{magenta}{#1}}
@@ -78,5 +113,10 @@
 \newpage
 
 \input{sections/supplementary}
+
+\newpage
+
+\bibliographystyle{elsarticle-harv} 
+\bibliography{main}
 
 \end{document}

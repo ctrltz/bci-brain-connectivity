@@ -85,10 +85,26 @@ parfor (subject = 1:n_subjects, num_workers)
         perf.GoodValidTrials = sum(good_completed_trials);
         perf.GoodValidTrialLength = mean(good_task_fbtime(good_completed_trials));
         perf.AccuracyGoodTrials = mean(good_task_result(good_completed_trials));
-            
+        
+        % Report class balance for trials w/o artifacts
+        good_completed_targets = [EEG.etc.trialdata(:).targetnumber];
+        for i_class = 1:n_classes
+            perf.(['ValidTrials' capitalize(classes{i_class})]) = ...
+                sum(good_completed_targets == classes_to_analyze(i_class));
+        end
+
         % Count NaN result as a bad one
         good_task_result(isnan(good_task_result)) = 0;
         perf.AccuracyGoodNanIsBad = mean(good_task_result);
+
+        %% Get performance in other tasks for comparison
+        for other_task = 1:3
+            task_trials = [BCI.TrialData(:).tasknumber] == other_task;
+            task_result = [BCI.TrialData(task_trials).result];
+            completed_trials = ~isnan(task_result);
+            perf = setfield(perf, ['AccuracyTask' num2str(other_task)], ...
+                mean(task_result(completed_trials)));
+        end
 
         %% Save the data
         perfs{subject, session} = perf;
@@ -101,16 +117,16 @@ save([savedata 'BCI_MI_performance.mat'], 'perfs', 'metadata');
 
 %% Save accuracy values in a separate file
 % Create accuracy array
-task1_accuracy = NaN(n_subjects, n_sessions);
+task_accuracy = NaN(n_subjects, n_sessions);
 for subject = 1:n_subjects
     for session = 1:n_sessions
         if ~isempty(perfs{subject, session})
-            task1_accuracy(subject, session) = perfs{subject, session}.Accuracy;
+            task_accuracy(subject, session) = perfs{subject, session}.Accuracy;
         end
     end
 end
 
-save([savedata 'BCI_MI_task1_accuracy.mat'], 'task1_accuracy');
+save([savedata 'BCI_MI_task_accuracy.mat'], 'task_accuracy');
 
 %% Save the results in the long format
 perfs_long = perfs(:);

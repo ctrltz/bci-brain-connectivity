@@ -2,10 +2,17 @@
 # Joint multiverse analysis
 #
 # Outputs:
-# 1. fig7-multiverse-joint-analysis.png
+# 1. fig8-multiverse-joint-analysis.png
 # 2. multiverse_rest.tex - table with statistical information (table S2)
 # 3. multiverse_joint.RData - intermediate results of the analysis
 ###
+
+# Prefix
+prefix = "multiverseRest"
+
+# Create output folder for images
+output.folder <- file.path(plot.path, 'multiverse_joint')
+dir.create(output.folder)
 
 # Clear the file for exporting results to TeX
 f <- file(output_filename, "w+")
@@ -27,15 +34,16 @@ all_results = rbindlist(c(
   fill = T
 ) %>% as.data.frame()
 names(all_results) <- c('Predictor', 'Response', 'Level', 
-                        'SplitSignif', 'Total', '<t-value>',
-                        '$\\beta$', 'df', 't-value', 'p-value', 
+                        'SplitSignif', 'SplitSignifSameDir', 'Total', 
+                        '<t-value>', '$\\beta$', 'df', 't-value', 'p-value', 
                         'CIMin', 'CIMax', 'Significant', 
                         'Significant.MC', 'Type', 'SNR Corr.')
 all_results <- all_results %>% 
   mutate(Percent_Consistent = if_else(
     .data$Significant.MC,
-    SplitSignif / Total,
-    1 - SplitSignif / Total
+    SplitSignifSameDir / Total,    # if significant, only count pipelines with the
+                                   # same direction of the effect
+    1 - SplitSignif / Total        # if non-significant, ignore the direction of the effect
   ))
 all_results$CIDisp <- paste(
   "$[", format(round(all_results$CIMin, 3), nsmall = 3), ",", 
@@ -121,10 +129,10 @@ joint_df$Question <- factor(joint_df$Question, levels = c('Is Predicted by SNR',
                                               'Changes Longitudinally\nafter Correction for SNR'))
 
 
-fig7 <- plotMultiverseJoint(joint_df, 'Consistency', 'Significant.MC', lim = 1, 
+fig8 <- plotMultiverseJoint(joint_df, 'Consistency', 'Significant.MC', lim = 1, 
                             facet_rule = 'Question ~ Category + Measure')
-ggsave(file.path(plot.path, prefix, 'fig7-multiverse-joint-analysis.png'), 
-       fig7, bg = "white", width = 7, height = 5)
+ggsave(file.path(output.folder, 'fig8-multiverse-joint-analysis.png'), 
+       fig8, bg = "white", width = 7, height = 5)
 
 
 ### Save all the results

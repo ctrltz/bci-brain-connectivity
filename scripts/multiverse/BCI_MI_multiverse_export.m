@@ -2,14 +2,15 @@
 % Export connectivity and SNR values for statistical analysis in R
 %
 % Outputs:
-% 1. BCI_MI_multiverse_rest_results_long.mat with the following variables:
+% 1. *output_filename* (provided outside of the script) with the following 
+% variables:
 % 
 %   data - all the results in the long format
 %   labels - column names
 %   multiverse_labels - labels of different pipelines
 %   inv_methods - labels of inverse methods
 %   bands - labels of bands
-%   roi_methods - labels of ROI aggregation methods (1SVD / 3SVD / AVGflip)
+%   roi_methods - labels of ROI aggregation methods (1SVD / 3SVD / AVG-flip)
 %   roi_agg_labels - labels of ROI extraction methods (same as above
 %       combined with mask / no mask)
 %%%
@@ -22,7 +23,7 @@ for i_multiverse = 1:n_multiverse
         for session = 1:n_sessions
             if analyzed_sessions(subject, session) && good_sessions(subject, session)
                 control_reshape{i_multiverse, subject, session} = ...
-                    [i_multiverse subject session task1_accuracy(subject, session) multiverse_data(i_multiverse, :)];
+                    [i_multiverse subject session task_accuracy(subject, session) multiverse_data(i_multiverse, :)];
             else
                 % mark session with NaN accuracy to be removed later
                 control_reshape{i_multiverse, subject, session} = ...
@@ -47,5 +48,5 @@ labels = {'Pipeline', 'Subject', 'Session', 'Accuracy', ...
           'Inverse', 'Band', 'ROI_Agg', 'Mask', 'ROI_Method', ...
           'ImCoh_Within', 'ImCoh_Across', 'LagCoh_Within', ...
           'LagCoh_Across', 'Coh_Within', 'Coh_Across', 'SNR'};
-save([savedata 'BCI_MI_multiverse_rest_results_long.mat'], ...
+save([savedata output_filename], ...
     'data', 'labels', 'multiverse_labels', 'inv_methods', 'bands', 'roi_methods', 'roi_agg_labels');

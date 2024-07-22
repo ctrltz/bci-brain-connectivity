@@ -3,15 +3,19 @@
 #
 # Outputs:
 # 1. metadata.tex - sample demographics, average accuracy, longitudinal changes 
-#    in accuracy, group differences in accuracy
-# 2. fig1-dataset-overview.png - overview of the dataset
-# 3. metadata.RData - intermediate results (accuracy ~ session LME, group 
+#    in accuracy, group differences in accuracy, comparison of accuracy in 
+#    different tasks
+# 2. fig3-accuracy.png - overview of the participants' performance
+# 3. figAsupp1-task-comparison.png - comparison of accuracy in different tasks
+# 4. metadata.RData - intermediate results (accuracy ~ session LME, group 
 #    differences t-test, mu power contrast t-values, data frames)
 ###
 
 
-# Prefix for TeX output
+# Create output folder for images
 prefix = "metadata"
+output.folder <- file.path(plot.path, prefix)
+dir.create(output.folder)
 
 # Load the data
 data <- as.data.frame(read.csv(input_filename, na.strings = c('NaN', '')))
@@ -19,33 +23,13 @@ demo <- unique(data[,c('Subject', 'MBSRsubject', 'handedness', 'instrument',
                        'athlete', 'handsport', 'hobby', 'gender', 'age')]) %>% 
   arrange(Subject)
 
-# Load mu power contrasts
-mu_contrast <- sanity$mu.power.diff
-c(n_subjects, n_periods, n_sensors) %<-% dim(mu_contrast)
+# Check for outliers in accuracy
+assert("Checking for accuracy outliers", 
+       sum(checkOutliers(data$Accuracy)) == 0)
 
 # Clear the file for exporting results to TeX
 f <- file(output_filename, "w+")
 close(f)
-
-
-### Mu Power Contrasts
-# Load one EEG dataset to import channel locations properly
-EEG <- import_set(file.path(eeg.path, 'S1_Session_1.set'))
-assert("Channel locations are complete", nrow(EEG$chan_info) == 60)
-
-# Calculate t-values for each period and EEG channel
-t.vals <- data.frame()
-for (p in 1:n_periods) {
-  for (ch in 1:n_sensors) {
-    t.vals <- rbind(t.vals, data.frame(Period = p, 
-      x = EEG$chan_info$x[ch], 
-      y = EEG$chan_info$y[ch], 
-      amplitude = t.test(mu_contrast[,p,ch])$statistic[['t']],
-      label = EEG$chan_info$electrode[ch]))
-  }
-}
-t.vals$Period = as.factor(t.vals$Period)
-levels(t.vals$Period) <- c("rest", "prep", "fbend")
 
 
 ### Performance Metrics
@@ -72,6 +56,12 @@ coef <- lmerTest:::get_coefmat(fm)["Session",]
 coef_ci <- confint(fm)
 summary(fm)
 
+beta0_acc <- lmerTest:::get_coefmat(fm)["(Intercept)", "Estimate"]
+beta1_session <- lmerTest:::get_coefmat(fm)["Session", "Estimate"]
+
+c(beta0_orig, beta1_orig) %<-% restoreBetas(beta0_acc, beta1_session,
+                                            accuracy_data, "Session", "Accuracy")
+
 ### Difference in Performance between Groups
 accuracy_avg <- accuracy_data %>%
   group_by(Subject) %>%
@@ -97,12 +87,121 @@ triallength_avg <- data[,c('Subject', 'Session', 'MeanValidTrialLength')] %>%
   summarise(TrialLength_avg = mean(MeanValidTrialLength))
 
 
+### Class Balance 
+class_balance <- data[,c('Subject', 'Session', 'ValidTrialsRight', 'ValidTrialsLeft')] %>%
+  aggregate(. ~ Subject, mean)
+
+
 ### Group-average Accuracy for All Sessions
 accuracy_session <- accuracy_data %>%
   group_by(Session) %>%
   summarise(Accuracy_avg = mean(Accuracy))
 accuracy_first <- 100 * accuracy_session$Accuracy_avg[accuracy_session$Session == 1]
 accuracy_last <- 100 * accuracy_session$Accuracy_avg[accuracy_session$Session == 11]
+
+
+### Comparison of performance in different tasks
+task_performance <- data[, c('Subject', 'Session', 'AccuracyTask1', 'AccuracyTask2', 'AccuracyTask3')] %>%
+  rename(Task1 = AccuracyTask1, Task2 = AccuracyTask2, Task3 = AccuracyTask3)
+task_avg_performance <- task_performance %>%
+  aggregate(. ~ Subject, mean)
+
+
+# Between-subject correlation of performance in tasks
+
+task_cor_between_12 <- with(task_avg_performance, cor.test(Task1, Task2))
+task_cor_between_13 <- with(task_avg_performance, cor.test(Task1, Task3))
+task_cor_between_23 <- with(task_avg_performance, cor.test(Task2, Task3))
+
+p_task_compare_12 <- ggplot(task_avg_performance,
+                            aes(x = Task1, y = Task2)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = T, color = "blue") +
+  annotate("text", x = 1, y = 0.425, 
+           label = paste0('ρ = ', round(task_cor_between_12$estimate, 2)),
+           hjust = 1, vjust = 0.5, size = 3.5,
+           fontface = mark(task_cor_between_12$p.value)) +
+  xlab('Accuracy (task 1)') + ylab('Accuracy (task 2)') +
+  ggtitle('Task 1 ~ Task 2') +
+  expand_limits(x = c(0.4, 1), y = c(0.4, 1)) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))
+
+
+p_task_compare_13 <- ggplot(task_avg_performance,
+                            aes(x = Task1, y = Task3)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = T, color = "blue") +
+  annotate("text", x = 1, y = 0.225, 
+           label = paste0('ρ = ', round(task_cor_between_13$estimate, 2)),
+           hjust = 1, vjust = 0.5, size = 3.5,
+           fontface = mark(task_cor_between_13$p.value)) +
+  xlab('Accuracy (task 1)') + ylab('Accuracy (task 3)') +
+  ggtitle('Task 1 ~ Task 3') +
+  expand_limits(x = c(0.4, 1), y = c(0.2, 1)) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))
+
+
+p_task_compare_23 <- ggplot(task_avg_performance,
+                            aes(x = Task2, y = Task3)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = T, color = "blue") +
+  annotate("text", x = 1, y = 0.225, 
+           label = paste0('ρ = ', round(task_cor_between_23$estimate, 2)),
+           hjust = 1, vjust = 0.5, size = 3.5,
+           fontface = mark(task_cor_between_23$p.value)) +
+  xlab('Accuracy (task 2)') + ylab('Accuracy (task 3)') +
+  ggtitle('Task 2 ~ Task 3') +
+  expand_limits(x = c(0.4, 1), y = c(0.2, 1)) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5, size = 10))
+
+
+## Within-subject correlation of performance in tasks
+
+task_corr <- task_performance %>%
+  nest_by(Subject) %>%
+  mutate(corr_12 = with(data, cor(Task1, Task2)),
+         corr_13 = with(data, cor(Task1, Task3)),
+         corr_23 = with(data, cor(Task2, Task3)))
+n_subjects <- nrow(task_corr)
+
+within_corr_df <- data.frame(
+  Tasks = c(
+    rep('Task 1 ~ Task 2', n_subjects),
+    rep('Task 1 ~ Task 3', n_subjects),
+    rep('Task 2 ~ Task 3', n_subjects)
+  ),
+  Subject = rep(task_corr$Subject, 3),
+  Correlation = unlist(c(task_corr$corr_12, task_corr$corr_13, task_corr$corr_23))
+)
+
+median_within_corr_df <- within_corr_df %>% 
+  aggregate(Correlation ~ Tasks, median)
+c(within_corr_12, within_corr_13, within_corr_23) %<-% median_within_corr_df$Correlation
+
+p_task_compare_within <- ggplot(within_corr_df, aes(x = 1, y = Correlation, fill = Tasks)) +
+  geom_rain(alpha = .5) +
+  facet_wrap(. ~ Tasks, nrow = 1) +
+  xlab('') + ylab('Within-subject correlation') +
+  theme_classic() +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        strip.background.x = element_blank(),
+        strip.text.x = element_text(size = 10)) +
+  guides(fill = 'none', color = 'none') + 
+  coord_flip()
+
+
+
+fig_task_cmp_between <- plot_grid(p_task_compare_12, p_task_compare_13, p_task_compare_23,
+                                  nrow = 1, align = 'v')
+fig_task_cmp <- plot_grid(fig_task_cmp_between, p_task_compare_within, ncol = 1,
+                          align = 'h', axis = 'l', labels = c('A', 'B'))
+
+save_plot(file.path(output.folder, 'figAsupp1-task-comparison.png'),
+          fig_task_cmp, base_width = 9, base_height = 6, bg = "white")
 
 
 ### Export the Results
@@ -131,7 +230,8 @@ tex.save(output_filename, "GroupDiffCIMin",
          format(round(group_diff_ttest$conf.int[[1]], 2), digits = 2), prefix = prefix)
 tex.save(output_filename, "GroupDiffCIMax", 
          format(round(group_diff_ttest$conf.int[[2]], 2), digits = 2), prefix = prefix)
-# NOTE: order of groups in cohen's d and t-test does not match
+# NOTE: order of groups in cohen's d and t-test does not match, multiplying the
+# t-value by minus one
 tex.save(output_filename, "GroupDiffCohensD", 
          format(round(as.matrix(-group_diff_cohens_d[['effsize']])[[1,1]], 3), 
                 digits = 1), prefix = prefix)
@@ -154,6 +254,51 @@ tex.save(output_filename, "MeanTrialLength",
                 nsmall = 2), 
          prefix = prefix)
 
+tex.save(output_filename, "\n% Class Balance\n")
+tex.save(output_filename, "MeanTrialsRight", 
+         format(round(mean(class_balance$ValidTrialsRight), 2), 
+                nsmall = 2), 
+         prefix = prefix)
+tex.save(output_filename, "SDTrialsRight", 
+         format(round(sd(class_balance$ValidTrialsRight), 2), 
+                digits = 2), 
+         prefix = prefix)
+tex.save(output_filename, "MeanTrialsLeft", 
+         format(round(mean(class_balance$ValidTrialsLeft), 2), 
+                nsmall = 2), 
+         prefix = prefix)
+tex.save(output_filename, "SDTrialsLeft", 
+         format(round(sd(class_balance$ValidTrialsLeft), 2), 
+                nsmall = 2), 
+         prefix = prefix)
+
+tex.save(output_filename, "\n% Performance in Different Tasks\n")
+tex.save(output_filename, "CorrFirstSecondTask", 
+         format(round(task_cor_between_12$estimate, 2), nsmall = 2), prefix = prefix)
+tex.save(output_filename, "CorrFirstSecondTaskCIMin", 
+         format(round(task_cor_between_12$conf.int[[1]], 2), nsmall = 2), prefix = prefix)
+tex.save(output_filename, "CorrFirstSecondTaskCIMax", 
+         format(round(task_cor_between_12$conf.int[[2]], 2), nsmall = 2), prefix = prefix)
+tex.save(output_filename, "CorrFirstThirdTask", 
+         format(round(task_cor_between_13$estimate, 2), nsmall = 2), prefix = prefix)
+tex.save(output_filename, "CorrFirstThirdTaskCIMin", 
+         format(round(task_cor_between_13$conf.int[[1]], 2), nsmall = 2), prefix = prefix)
+tex.save(output_filename, "CorrFirstThirdTaskCIMax", 
+         format(round(task_cor_between_13$conf.int[[2]], 2), nsmall = 2), prefix = prefix)
+tex.save(output_filename, "CorrSecondThirdTask", 
+         format(round(task_cor_between_23$estimate, 2), nsmall = 2), prefix = prefix)
+tex.save(output_filename, "CorrSecondThirdTaskCIMin", 
+         format(round(task_cor_between_23$conf.int[[1]], 2), nsmall = 2), prefix = prefix)
+tex.save(output_filename, "CorrSecondThirdTaskCIMax", 
+         format(round(task_cor_between_23$conf.int[[2]], 2), nsmall = 2), prefix = prefix)
+
+tex.save(output_filename, "CorrWithinFirstSecondTask", 
+         format(round(within_corr_12, 2), nsmall = 2), prefix = prefix)
+tex.save(output_filename, "CorrWithinFirstThirdTask", 
+         format(round(within_corr_13, 2), nsmall = 2), prefix = prefix)
+tex.save(output_filename, "CorrWithinSecondThirdTask", 
+         format(round(within_corr_23, 2), nsmall = 2), prefix = prefix)
+
 ### Plot the Results
 
 # Histogram of Accuracy Across All Sessions
@@ -167,56 +312,31 @@ p_hist <- ggplot(data = accuracy_data,
 # Longitudinal Changes in Average Accuracy
 p_group <- accuracy_data %>%
   group_by(Session) %>%
-  summarise(Accuracy_avg = mean(Accuracy), 
+  summarise(Accuracy_avg = mean(Accuracy),
             Accuracy_se = sd(Accuracy) / sqrt(sum(!is.na(Accuracy))),
             Session = unique(Session)) %>%
   ungroup() %>%
   ggplot(data = .,
          aes(x = Session, y = Accuracy_avg)) +
-  geom_pointrange(aes(ymin = Accuracy_avg - 1.96 * Accuracy_se, 
+  geom_pointrange(aes(ymin = Accuracy_avg - 1.96 * Accuracy_se,
                       ymax = Accuracy_avg + 1.96 * Accuracy_se),
                   linewidth = 0.5, color = "black") +
   geom_smooth(method = "lm", se = F, color = 'blue', linewidth = 1) +
   scale_x_continuous(breaks = seq(1, 11, by = 2)) +
   scale_y_continuous(breaks = seq(0.6, 0.8, by = 0.1)) +
+  expand_limits(y = c(0.6, 0.8)) +
   ylab('Accuracy') +
   theme_classic()
 
-# Load parts of the figure from other images
-p_training <- ggdraw() +
-  draw_image(file.path(asset.path, 'training-structure.png'),
-             x = 0.05, width = 0.9)
-
-p_trial <- ggdraw() +
-  draw_image(file.path(asset.path, 'trial-structure.png'),
-             x = 0.05, width = 0.9)
-
-p_contrast <- ggplot(t.vals,
-                     aes(x = x,
-                         y = y,
-                         fill = amplitude,
-                         z = amplitude,
-                         label = label)) +
-  geom_topo(grid_res = 200,
-            chan_size = rel(0.15), 
-            head_size = rel(0.5),
-            color = 'black',
-            linetype = 'solid',
-            linewidth = rel(0.1)) + 
-  facet_wrap(. ~ Period, nrow = 1) +
-  scale_fill_distiller(palette = "RdBu") + 
-  theme_void() + 
-  theme(legend.title = element_text(angle = -90), 
-        legend.title.align = 0.5,
-        strip.text.x = element_text(size = 10, margin = margin(b = 5))) +
-  guides(fill = guide_colourbar(title.position = 'right',
-                                title = 't-statistic')) +
-  coord_equal()
 
 # Raincloud plot - compare performance between groups
 p_group_cmp <- ggplot(data = accuracy_avg,
                       aes(Group, Accuracy_avg, fill = Group)) +
   geom_rain(alpha = .5) +
+  geom_signif(comparisons = list(c("Control", "MBSR")), y_position = 0.95,
+              tip_length = 0, test = "t.test", textsize = 4,
+              map_signif_level = c('*' = 0.05, 'n.s.' = 1)) +
+  expand_limits(y = c(0.5, 1)) +
   theme_classic() +
   scale_fill_brewer(palette = 'Dark2') +
   ylab('Accuracy') +
@@ -239,7 +359,7 @@ p_individual <- accuracy_data %>%
     geom_point(aes(y = Accuracy, shape = "Session"), size = 0.6, color = "grey") +
     geom_point(aes(shape = "Average"), size = 1) +
     xlab('Subject') + ylab('Accuracy') +
-    expand_limits(y = c(min_accuracy, 1)) +
+    expand_limits(y = c(0.2, 1)) +
     scale_shape_manual(values = shapes, labels = labels) +
     theme_classic() +
     theme(
@@ -253,21 +373,20 @@ p_individual <- accuracy_data %>%
 
 
 ### Combine plots into dataset overview -- Figure 1
-fig1_ABC <- plot_grid(p_training, p_trial, p_contrast,
-                      ncol = 1, labels = c('A', 'B', 'C'),
-                      align = 'h', axis = 'l')
+fig3_AB <- plot_grid(p_group, p_group_cmp, ncol = 1, 
+                     align = 'h', axis = 'l',
+                     labels = c('A', 'B'))
+fig3 <- plot_grid(fig3_AB, p_individual, 
+                  nrow = 1, rel_widths = c(1, 2),
+                  labels = c('', 'C'))
+save_plot(file.path(output.folder, 'fig3-accuracy.pdf'), 
+          fig3, base_width = 9, base_height = 4)
+save_plot(file.path(output.folder, 'fig3-accuracy.png'), 
+          fig3, bg = "white", base_width = 7, base_height = 4)
 
-fig1_DE <- plot_grid(p_group, p_group_cmp, nrow = 1, align = 'v',
-                     labels = c('D', 'E'))
-fig1_DEF <- plot_grid(fig1_DE, p_individual, ncol = 1, 
-                      align = 'h', axis = 'l', 
-                      rel_heights = c(0.33, 0.66), 
-                      labels = c('', 'F'))
-fig1 <- plot_grid(fig1_ABC, fig1_DEF, nrow = 1)
-save_plot(file.path(plot.path, 'fig1-dataset-overview.pdf'), 
-          fig1, base_width = 9, base_height = 6)
-save_plot(file.path(plot.path, 'fig1-dataset-overview.png'), 
-          fig1, bg = "white", base_width = 9, base_height = 6)
+fig3_parts = list(
+  group = p_group, group_cmp = p_group_cmp, individual = p_individual
+)
 
 
 ### Demographics
@@ -335,6 +454,7 @@ tex.save(output_filename, "sdAgeControl",
          format(round(sdAgeControl, 1), nsmall = 1), prefix = '')
 
 # Save the results
-save(t.vals, fm, coef_ci, group_diff_ttest, group_diff_cohens_d,
+save(fm, coef_ci, group_diff_ttest, group_diff_cohens_d,
      accuracy_data, accuracy_avg, accuracy_session, demo, 
-     file = file.path(r.path, 'metadata.RData'))
+     task_cor_between_12, task_cor_between_13, task_cor_between_23,
+     within_corr_df, file = file.path(r.path, 'metadata.RData'))

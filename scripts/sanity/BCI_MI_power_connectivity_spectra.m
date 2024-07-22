@@ -52,14 +52,13 @@ for p = 1:n_periods
     ax.Label.Position(1) = 3; 
     ax.Label.FontSize = 10;
     ax.Label.Rotation = 270;
-%     exportgraphics(h, ['local/2023-01-06-preprocessing/mu_power_contrast_' periods{p} '.png']);
 end
 
 %% Mu Power Contrasts - Clear the Data
 clear results_mu;
 
 %% Laplace - Load the Data
-load([savedata 'BCI_MI_C3_C4_Laplace.mat']);
+load([savedata 'BCI_MI_Laplace_SNR.mat']);
 
 %% PSD Example with fooof fit for pipeline overview
 spec_demo = squeeze(mean(results_lap.spec_laplace(:, 1, :, :), [1 2 3]));

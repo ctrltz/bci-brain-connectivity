@@ -5,6 +5,7 @@
 \usepackage{geometry}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{array}
 \usepackage{xcolor}
 \usepackage{multirow}
 \usepackage{booktabs}
@@ -63,7 +64,6 @@
 \newcommand{\tofix}[1]{\textcolor{magenta}{#1}}
 \input{numbers/combined}
 
-\numberwithin{equation}{section}
 \geometry{a4paper, total={170mm,257mm}, left=20mm, top=20mm}
 \parindent = 0 cm
 
@@ -97,17 +97,19 @@
 
 \input{sections/discussion}
 
+\input{sections/conclusion}
+
 \section*{Data and Code Availability}
 
-EEG recordings are publicly available at \texttt{\url{https://doi.org/10.6084/m9.figshare.13123148}}, and a detailed description of the dataset is provided in \citep{Stieger2021_dataset}. Analysis scripts are available at \texttt{\url{https://github.com/ctrltz/bci-brain-connectivity}}. Preprocessing data that is necessary to reproduce the analysis (indices of bad trials, channels, and ICA components, ICA weights, excluded sessions, etc.) are available at \texttt{\url{https://osf.io/tcvyd}}.
+EEG recordings are publicly available at \texttt{\url{https://doi.org/10.6084/m9.figshare.13123148}}, and a detailed description of the dataset is provided in \citep{Stieger2020_analysis, Stieger2021_dataset}. Analysis scripts are available at \texttt{\url{https://github.com/ctrltz/bci-brain-connectivity}}. Preprocessing data that are necessary to reproduce the analysis (indices of bad trials, channels, and ICA components; ICA weights, excluded sessions, etc.) are available at \texttt{\url{https://osf.io/tcvyd}}.
 
 \section*{CRediT Authorship Contribution Statement}
 
-\textbf{Nikolai Kapralov:} Conceptualization, Data curation, Formal analysis, Investigation, Methodology, Software, Visualization, Writing – original draft, Writing – review \& editing. \textbf{Mina Jamshidi Idaji:} Validation (Code Review), Writing – review \& editing. \textbf{Tilman Stephani:} Methodology, Validation (Code Review), Writing – review \& editing. \textbf{Alina Studenova:} Validation (Code Review), Writing – review \& editing. \textbf{Carmen Vidaurre:} Software, Writing – review \& editing. \textbf{Tomas Ros:} Writing – review \& editing. \textbf{Arno Villringer:} Funding acquisition, Writing – review \& editing. \textbf{Vadim Nikulin:} Conceptualization, Investigation, Methodology, Project administration, Supervision, Writing – Original Draft, Writing – review \& editing.
+\textbf{Nikolai Kapralov:} Conceptualization, Data curation, Formal analysis, Investigation, Methodology, Software, Visualization, Writing – original draft, Writing – review \& editing. \textbf{Mina Jamshidi Idaji:} Validation (Code Review), Writing – review \& editing. \textbf{Tilman Stephani:} Methodology, Validation (Code Review), Writing – review \& editing. \textbf{Alina Studenova:} Validation (Code Review), Writing – review \& editing. \textbf{Carmen Vidaurre:} Software, Writing – review \& editing. \textbf{Tomas Ros:} Writing – review \& editing. \textbf{Arno Villringer:} Funding acquisition, Supervision, Writing – review \& editing. \textbf{Vadim Nikulin:} Conceptualization, Investigation, Methodology, Project administration, Supervision, Writing – Original Draft, Writing – review \& editing.
 
-\section*{Acknowledgements}
+\section*{Acknowledgments}
 
-We would like to thank the authors of the dataset for making it publicly available and James Stieger in particular for providing additional information about the dataset on request.
+We would like to thank the authors of the dataset for making it publicly available and James Stieger in particular for providing additional information about the dataset on request. C.V. was funded by the Spanish Ministry of Science, Innovation and Universities, ref. number PID2020-118829RB-I00.
 
 \bibliographystyle{elsarticle-harv} 
 \bibliography{main}

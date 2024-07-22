@@ -1,0 +1,46 @@
+\newcommand{\laplaceConnectivitySummary}{
+\begin{tabular}{cccccc}
+\toprule
+Predictor & Response & $\beta$ & t-value & p-value & 95\% CI\\
+\midrule
+SNR & WH ImCoh & 0.388 & 6.735 & \textbf{$<$0.001*} & $[ 0.275, 0.501]$\\
+SNR & WH LagCoh & 0.550 & 10.175 & \textbf{$<$0.001*} & $[ 0.443, 0.656]$\\
+SNR & WH Coherence & 0.669 & 12.200 & \textbf{$<$0.001*} & $[ 0.549, 0.788]$\\
+\addlinespace
+SNR & AH ImCoh & 0.160 & 2.696 & \textbf{0.008*} & $[ 0.041, 0.280]$\\
+SNR & AH LagCoh & 0.160 & 2.617 & \textbf{0.010} & $[ 0.037, 0.283]$\\
+SNR & AH Coherence & -0.126 & -2.086 & \textbf{0.038} & $[-0.245,-0.007]$\\
+\midrule
+WH ImCoh & Accuracy & 0.023 & 0.639 & 0.523 & $[-0.046, 0.092]$\\
+WH LagCoh & Accuracy & 0.079 & 2.174 & \textbf{0.030} & $[ 0.008, 0.150]$\\
+WH Coherence & Accuracy & 0.159 & 4.932 & \textbf{$<$0.001*} & $[ 0.096, 0.222]$\\
+\addlinespace
+WH ImCoh & Accuracy $|$ SNR & -0.027 & -0.762 & 0.446 & $[-0.097, 0.042]$\\
+WH LagCoh & Accuracy $|$ SNR & 0.007 & 0.180 & 0.857 & $[-0.068, 0.082]$\\
+WH Coherence & Accuracy $|$ SNR & 0.097 & 2.725 & \textbf{0.007*} & $[ 0.027, 0.168]$\\
+\addlinespace
+AH ImCoh & Accuracy & 0.021 & 0.686 & 0.493 & $[-0.039, 0.081]$\\
+AH LagCoh & Accuracy & 0.019 & 0.615 & 0.539 & $[-0.042, 0.081]$\\
+AH Coherence & Accuracy & -0.052 & -1.513 & 0.131 & $[-0.119, 0.015]$\\
+\addlinespace
+AH ImCoh & Accuracy $|$ SNR & -0.002 & -0.063 & 0.950 & $[-0.061, 0.057]$\\
+AH LagCoh & Accuracy $|$ SNR & -0.003 & -0.109 & 0.913 & $[-0.064, 0.057]$\\
+AH Coherence & Accuracy $|$ SNR & -0.040 & -1.196 & 0.232 & $[-0.106, 0.025]$\\
+\midrule
+Session & WH ImCoh & -0.044 & -1.381 & 0.168 & $[-0.108, 0.019]$\\
+Session & WH LagCoh & -0.052 & -1.680 & 0.094 & $[-0.113, 0.009]$\\
+Session & WH Coherence & -0.032 & -0.931 & 0.352 & $[-0.101, 0.036]$\\
+\addlinespace
+Session & WH ImCoh $|$ SNR & -0.034 & -1.094 & 0.274 & $[-0.096, 0.027]$\\
+Session & WH LagCoh $|$ SNR & -0.038 & -1.321 & 0.187 & $[-0.096, 0.019]$\\
+Session & WH Coherence $|$ SNR & -0.013 & -0.418 & 0.676 & $[-0.074, 0.048]$\\
+\addlinespace
+Session & AH ImCoh & 0.031 & 0.832 & 0.406 & $[-0.042, 0.105]$\\
+Session & AH LagCoh & 0.035 & 0.963 & 0.336 & $[-0.037, 0.107]$\\
+Session & AH Coherence & 0.073 & 2.204 & \textbf{0.028} & $[ 0.008, 0.138]$\\
+\addlinespace
+Session & AH ImCoh $|$ SNR & 0.036 & 0.979 & 0.328 & $[-0.037, 0.109]$\\
+Session & AH LagCoh $|$ SNR & 0.040 & 1.112 & 0.267 & $[-0.031, 0.111]$\\
+Session & AH Coherence $|$ SNR & 0.070 & 2.103 & \textbf{0.036} & $[ 0.005, 0.135]$\\
+\bottomrule
+\end{tabular}}

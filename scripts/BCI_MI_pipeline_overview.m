@@ -1,8 +1,13 @@
 %%%
-% Prepare panels for the pipeline overview figure
+% Prepare panels for the study and pipeline overview figures (3-5 in the 
+% list below were edited manually)
 %
 % Outputs:
-% 1. fig2c-roi-weights.png
+% 1. assets/roi-weights-avg-flip.png
+% 2. assets/roi-weights-1svd.png
+% 3. connectivity-metrics.png
+% 4. cortex-dorsal-view.png
+% 5. channel-locations.png
 %%%
 
 % Plot AVG-flip and SVD weights for one participant and one pipeline
@@ -32,22 +37,22 @@ end
 % Scale SVD weights to [-1, 1] range
 roi_weights_svd = roi_weights_svd ./ max(abs(roi_weights_svd));
 
-h = figure('Position', [10 10 600 500]);
-% AVG-flip
-ax = subplot(121);
+% Plot AVG-flip weights
+h = figure('Position', [10 10 500 250]);
+ax = gca;
 allplots_cortex_subplots(sa, cort5K2full(roi_weights_avgflip, sa), [-1 1], ...
     cm17, 'CSP-L', 1, 'views', 5, 'ax', ax); 
-text(0.5, 1.2, 'AVG-flip', 'Units', 'normalized', ...
-    'HorizontalAlignment', 'center', 'FontSize', 18, ...
-    'FontName', 'Arial');
-% CSP-masked ROI definitions
-ax = subplot(122);
+exportgraphics(h, [cfg.asset.base 'roi-weights-avg-flip.png']);
+if (run_cmd)
+    close(h);
+end
+
+% Plot SVD weights
+h = figure('Position', [10 10 500 250]);
+ax = gca;
 allplots_cortex_subplots(sa, cort5K2full(roi_weights_svd, sa), [-1 1], ...
     cm17, 'CSP-L', 1, 'views', 5, 'ax', ax); 
-text(0.5, 1.2, '1SVD', 'Units', 'normalized', ...
-    'HorizontalAlignment', 'center', 'FontSize', 18, ...
-    'FontName', 'Arial');
-exportgraphics(h, [cfg.asset.base 'fig2c-roi-weights.png']);
+exportgraphics(h, [cfg.asset.base 'roi-weights-1svd.png']);
 if (run_cmd)
     close(h);
 end
@@ -95,11 +100,23 @@ if (run_cmd)
     close(h);
 end
 
+
 %% Template for Within / Across Edges
 h = figure('Position', [10 10 600 400]);
 allplots_cortex_subplots(sa, cort5K2full(zeros(n_voxels, 1), sa), [-1 1], ...
     cm17, 'CSP-L', 1, 'views', 5);
 exportgraphics(h, [cfg.results.misc 'cortex-dorsal-view.png'], ...
+    'Resolution', 500);
+if (run_cmd)
+    close(h);
+end
+
+
+%% Plot channel locations to mark Laplacian channels
+h = figure; hold on;
+topoplot([], all_chanlocs, 'style', 'blank', ...
+    'emarker', {'.', 'k', 16, 1});
+exportgraphics(h, [cfg.results.misc 'channel-locations.png'], ...
     'Resolution', 500);
 if (run_cmd)
     close(h);

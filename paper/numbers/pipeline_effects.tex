@@ -1,25 +1,61 @@
+% Main effects
+
 \newcommand{\pipelineEffectsSummary}{
 \begin{tabular}{lccccc}
 \toprule
-\multicolumn{1}{l}{Value} & \multicolumn{1}{c}{Inverse Method} & \multicolumn{1}{c}{ROI Method} & \multicolumn{1}{c}{ROI Method} & \multicolumn{1}{c}{Source Mask} & \multicolumn{1}{c}{Band} \\
-  & LCMV $|$ eLORETA & 3SVD $|$ 1SVD & AVG-F $|$ 1SVD & With $|$ Without & NB $|$ BB\\
+\multicolumn{1}{l}{Value} & \multicolumn{1}{c}{Band} & \multicolumn{1}{c}{Inverse Method} & \multicolumn{1}{c}{ROI Def.} & \multicolumn{1}{c}{ROI Method} & \multicolumn{1}{c}{ROI Method} \\
+  & NB $|$ BB & LCMV $|$ eLORETA & Task $|$ Anat. & 3SVD $|$ 1SVD & AVG-F $|$ 1SVD\\
 \midrule
-SNR & \textbf{8.01*} & -1.85 & 1.1 & 1.29 & ---\\
+SNR & \textbf{3.38*} & \textbf{6*} & 1.22 & -0.24 & 1.29\\
 \addlinespace
-WH ImCoh & -1.9 & \textbf{3.31*} & \textbf{2.48} & \textbf{-4.16*} & \textbf{-2.15}\\
-WH LagCoh & \textbf{-3.55*} & -1.51 & \textbf{2.16} & -1.53 & \textbf{-7.5*}\\
-WH Coherence & 0.42 & \textbf{-5.55*} & -2.07 & \textbf{3.71*} & -1.18\\
+WH ImCoh & 0.01 & -1.29 & \textbf{-3.31} & \textbf{2.79} & \textbf{5.05*}\\
+WH LagCoh & 1.14 & 0.87 & -2.18 & -1.58 & 2.21\\
+WH Coherence & 0.03 & 1.53 & 2.15 & \textbf{-3.63*} & \textbf{-4.2*}\\
 \addlinespace
-AH ImCoh & \textbf{-4.91*} & \textbf{3.28*} & -0.13 & -0.64 & \textbf{-17.33*}\\
-AH LagCoh & \textbf{-3.24*} & 1.69 & -1.02 & -1.33 & \textbf{-13.46*}\\
-AH Coherence & 0.96 & -1.42 & \textbf{-2.21} & -1.83 & \textbf{-2.5}\\
+AH ImCoh & -0.13 & -0.78 & 0.41 & \textbf{3.3} & 0.86\\
+AH LagCoh & 2.03 & -0.23 & \textbf{-2.79} & \textbf{3.19} & -1.62\\
+AH Coherence & 1.57 & \textbf{2.87} & \textbf{-2.72} & -2.21 & \textbf{-2.51}\\
 \addlinespace
-WH ImCoh $|$ SNR & \textbf{-2.83} & \textbf{3.54*} & \textbf{2.37} & \textbf{-4.33*} & \textbf{-2.16}\\
-WH LagCoh $|$ SNR & \textbf{-6.95*} & -0.65 & 1.61 & -2.05 & \textbf{-7.27*}\\
-WH Coherence $|$ SNR & 0.14 & \textbf{-5.47*} & \textbf{-2.11} & \textbf{3.66*} & -1.17\\
+WH ImCoh $|$ SNR & -0.38 & -1.93 & \textbf{-3.31} & \textbf{2.69} & \textbf{4.69*}\\
+WH LagCoh $|$ SNR & -1.1 & \textbf{-3.52*} & \textbf{-3.96*} & -1.98 & 2.02\\
+WH Coherence $|$ SNR & -0.18 & 1.2 & 2.14 & \textbf{-3.73*} & \textbf{-4.41*}\\
 \addlinespace
-AH ImCoh $|$ SNR & \textbf{-6.81*} & \textbf{3.74*} & -0.4 & -0.95 & \textbf{-17.42*}\\
-AH LagCoh $|$ SNR & \textbf{-4.92*} & 2.06 & -1.25 & -1.59 & \textbf{-13.17*}\\
-AH Coherence $|$ SNR & 0.53 & -1.31 & \textbf{-2.25} & -1.88 & \textbf{-2.48}\\
+AH ImCoh $|$ SNR & -0.74 & -1.82 & 0.14 & \textbf{3.02} & 0.54\\
+AH LagCoh $|$ SNR & 0.27 & \textbf{-3.1} & \textbf{-3.22} & \textbf{3.12} & -2.15\\
+AH Coherence $|$ SNR & 1.35 & \textbf{2.49} & \textbf{-2.91} & -2.26 & \textbf{-2.69}\\
+\bottomrule
+\end{tabular}}
+
+% Interactions
+
+\newcommand{\pipelineEffectsInteractionSummary}{
+\begin{tabular}{cccc}
+\toprule
+Interaction & Response & t-value & p-value\\
+\midrule
+ & SNR & -12.43 & \textbf{$<$0.001*}\\
+ & WH LagCoh & -4.90 & \textbf{$<$0.001*}\\
+ & WH Coherence & -2.44 & \textbf{0.04}\\
+ & AH ImCoh & -2.32 & \textbf{0.05}\\
+ & AH LagCoh & -9.00 & \textbf{$<$0.001*}\\
+ & AH Coherence & -5.45 & \textbf{$<$0.001*}\\
+ & WH ImCoh $|$ SNR & 2.50 & \textbf{0.03}\\
+ & WH LagCoh $|$ SNR & 3.01 & \textbf{0.01}\\
+ & AH LagCoh $|$ SNR & -2.37 & \textbf{0.04}\\
+\multirow{-10}{*}{\centering\arraybackslash Band (NB) $\cdot$ Inverse (LCMV)} & AH Coherence $|$ SNR & -4.63 & \textbf{$<$0.001*}\\
+\cmidrule{1-4}
+Inverse (LCMV) $\cdot$ ROI Definition (Task-based) & WH LagCoh $|$ SNR & -2.77 & \textbf{0.02}\\
+\cmidrule{1-4}
+ & WH ImCoh & 3.19 & \textbf{0.01}\\
+ & WH LagCoh & 2.58 & \textbf{0.03}\\
+ & WH Coherence & -2.31 & \textbf{0.05}\\
+ & WH ImCoh $|$ SNR & 3.15 & \textbf{0.01}\\
+ & WH LagCoh $|$ SNR & 4.24 & \textbf{$<$0.001*}\\
+\multirow{-6}{*}{\centering\arraybackslash ROI Definition (Task-based) $\cdot$ ROI Method (3SVD)} & WH Coherence $|$ SNR & -2.32 & \textbf{0.05}\\
+\cmidrule{1-4}
+ & WH ImCoh & -4.50 & \textbf{$<$0.001*}\\
+ & WH Coherence & 4.35 & \textbf{$<$0.001*}\\
+ & WH ImCoh $|$ SNR & -4.27 & \textbf{$<$0.001*}\\
+\multirow{-4}{*}{\centering\arraybackslash ROI Definition (Task-based) $\cdot$ ROI Method (AVG-F)} & WH Coherence $|$ SNR & 4.51 & \textbf{$<$0.001*}\\
 \bottomrule
 \end{tabular}}
