@@ -79,7 +79,7 @@ A_eloreta_normal_focal = mkfilt_eloreta2(L_normal, 0.001);
 A_eloreta_normal_smooth = mkfilt_eloreta2(L_normal, 0.5);
 
 % signflip mask per ROI
-n_rois_HO = 96;  % 97 - 1 (subcortical)
+n_rois_HO = numel(sa.HO_labels) - 1; % ignore Subcortical
 signflip = zeros(numel(sa.voxels_5K_cort), 1);
 for i_roi = 1:n_rois_HO
     voxels_roi = get_voxels_roi(sa, i_roi, []);
@@ -109,6 +109,6 @@ exportgraphics(h, [cfg.results.misc 'signflip_cortex.png']);
 
 save([folder dataset_to_use '_sa_eLoreta.mat'], ...
      'clab', 'sa', 'L', 'L_normal', 'vc', 'signflip', ...
-     'all_chanlocs', 'n_sensors', 'n_voxels', ...
+     'all_chanlocs', 'n_sensors', 'n_voxels', 'n_rois_HO', ...
      'A_eloreta', 'A_eloreta_normal',  ...
      'A_eloreta_normal_focal', 'A_eloreta_normal_smooth');

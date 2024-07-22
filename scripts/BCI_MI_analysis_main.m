@@ -17,6 +17,7 @@ rng('default');
 %% Setup
 BCI_MI_config;
 % run_cmd = 0; num_workers = 0; % turn off parallel computation for debugging
+revision = 0;  % whether to run analyses that were prepared during revision
 
 %% Run all tests
 % BCI_MI_run_tests();
@@ -47,12 +48,16 @@ load([savedata 'BCI_MI_group_CSP.mat']);
 load([savedata 'BCI_MI_CSP_voxel_mask.mat']);
 BCI_MI_CSP_apply;
 
+% Get CSP classification accuracies for each training session
+BCI_MI_CSP_cv;
+
 % Load CSP spectra and prepare the figure
 load([savedata 'BCI_MI_CSP_spectra.mat']);
 BCI_MI_CSP_plot;
 
 %% Run the analysis for C3/C4-Laplace
-BCI_MI_C3_C4_Laplace;
+BCI_MI_Laplace_SNR;
+BCI_MI_Laplace_connectivity;
 
 %% Run the multiverse analysis
 BCI_MI_multiverse_config;
@@ -66,12 +71,26 @@ BCI_MI_SNR_multiverse;
 
 % Calculate the connectivity for all pipelines
 BCI_MI_connectivity_multiverse;
+if (revision) 
+    % Hilbert-based and Fourier-based estimation of PS showed systematic
+    % differences and confounded the effect of filtering
+    BCI_MI_connectivity_multiverse_BB_NB;
+end
 
 % Export SNR and connectivity to R in the long format
 load([savedata 'BCI_MI_connectivity_multiverse.mat']);   % coh & others
 load([savedata 'BCI_MI_SNR_rois_multiverse.mat']);       % snr_*, r2_*
-load([savedata 'BCI_MI_task1_accuracy.mat']);            % task1_accuracy
+load([savedata 'BCI_MI_task_accuracy.mat']);             % task_accuracy
+output_filename = 'BCI_MI_multiverse_rest_results_long.mat';
 BCI_MI_multiverse_export;
+
+if (revision)
+    % Export previous version of PS results to compare Hilbert and Fourier
+    % estimates in R
+    load([savedata 'BCI_MI_connectivity_multiverse_BB_NB.mat']);   % coh & others
+    output_filename = 'BCI_MI_multiverse_rest_results_long_BB_NB.mat';
+    BCI_MI_multiverse_export;
+end
 
 %% Sanity check
 BCI_MI_mu_power_contrasts;

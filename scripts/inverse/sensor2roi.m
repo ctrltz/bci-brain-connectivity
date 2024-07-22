@@ -6,8 +6,8 @@ function [roi_data, ev, w] = sensor2roi(sensor_data, sa, A_inv, agg_method, agg_
 %       EEG data
 %   sa - source analysis structure
 %   A_inv [channels x voxels] - inverse operator
-%   agg_method - method for aggregating voxels within the ROI ('svd' or
-%       'avg-flip')
+%   agg_method - method for aggregating voxels within the ROI: 'svd', 
+%       'avg-flip', or 'w' (apply custom weights)
 %   agg_params - additional parameters for the aggregation of voxels
 %
 % Returns:
@@ -21,7 +21,7 @@ function [roi_data, ev, w] = sensor2roi(sensor_data, sa, A_inv, agg_method, agg_
     n_rois = numel(sa.HO_labels);
     roi_inds = 1:n_rois;
     voxel_mask = [];
-    signflip = [];
+    weights = [];
     
     if isfield(agg_params, 'n_comps')
         n_comps = agg_params.n_comps;
@@ -42,13 +42,15 @@ function [roi_data, ev, w] = sensor2roi(sensor_data, sa, A_inv, agg_method, agg_
 
         voxels_roi = get_voxels_roi(sa, roi_ind, voxel_mask);
         voxel_data = sensor2voxel(sensor_data, sa.myinds, A_inv, voxels_roi);
-        
+
         if strcmp(agg_method, 'avg-flip')
-            signflip = agg_params.signflip(voxels_roi);
+            weights = agg_params.signflip(voxels_roi) / numel(voxels_roi);
+        elseif strcmp(agg_method, 'w')
+            weights = agg_params.weights{i_roi};
         end
         
         [roi_data(:, i_roi, :), ev(i_roi, :), w{i_roi}] = ...
-            voxel2roi(voxel_data, agg_method, n_comps, signflip);
+            voxel2roi(voxel_data, agg_method, n_comps, weights);
         
         fprintf('.');
     end

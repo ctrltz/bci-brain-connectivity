@@ -187,7 +187,6 @@ csp_voxel_mask = squeeze(csp_roi_mask(thresholds == csp_source_threshold, :))';
 assert(size(csp_voxel_mask, 1) == n_voxels); % ensure that voxels are the 1st dimension
 
 %% Check which ROIs do selected sources belong to
-n_rois_HO = numel(sa.HO_labels) - 1; % ignore Subcortical
 num_voxels_roi = zeros(n_rois_HO, 1);
 csp_mask_sel = csp_mask(thresholds == csp_source_threshold, :)';
 for roi_ind = 1:n_rois_HO

@@ -2,11 +2,19 @@
 # Longitudinal changes in connectivity
 #
 # Outputs:
-# 1. fig6-multiverse-connectivity-performance-within.png
-# 2. fig6supp1-multiverse-connectivity-performance-between-subject.png
-# 3. multiverse_connectivity_longitude.RData - intermediate results of the 
+# 1. fig7supp2-multiverse-connectivity-longitude.png
+# 2. multiverse_connectivity_longitude.RData - intermediate results of the 
 #    analysis
 ###
+
+# Load the data
+c(results, pipeline_desc) %<-% load_multiverse(input_filename)
+
+# Create output folder for images
+prefix = "multiverse_connectivity_longitude"
+output.folder <- file.path(plot.path, prefix)
+dir.create(output.folder)
+
 
 ### Longitudinal Changes in Connectivity Within Hemispheres
 
@@ -70,6 +78,17 @@ conn_within_vs_session_results <- lapply(conn_within_vs_session_results,
                                          })
 
 
+# Plot the longitudinal changes for all pipelines separately
+for (ps in param_space) {
+  if (length(ps$cols.scale) < 3) {
+    message(paste('plotMultiverseScatterWithin:', ps$cols.scale[[1]], '~', ps$cols.scale[[2]]))
+    p_separate <- plotMultiverseScatterWithin(results, ps$cols.scale[[1]], ps$cols.scale[[2]])
+    ggsave(file.path(output.folder, paste(ps$cols.scale[[2]], '_vs_session_within.png', sep = '')),
+           plot = p_separate, width = 9, height = 6)
+  }
+}
+
+
 ### Longitudinal Changes in Connectivity Across Hemispheres
 param_space <- list(
   list(formula_split = connectivity_vs_session_formula("ImCoh_Across"),
@@ -131,6 +150,17 @@ conn_across_vs_session_results <- lapply(conn_across_vs_session_results,
                                          })
 
 
+# Plot the longitudinal changes for all pipelines separately
+for (ps in param_space) {
+  if (length(ps$cols.scale) < 3) {
+    message(paste('plotMultiverseScatterWithin:', ps$cols.scale[[1]], '~', ps$cols.scale[[2]]))
+    p_separate <- plotMultiverseScatterWithin(results, ps$cols.scale[[1]], ps$cols.scale[[2]])
+    ggsave(file.path(output.folder, paste(ps$cols.scale[[2]], '_vs_session_within.png', sep = '')),
+           plot = p_separate, width = 9, height = 6)
+  }
+}
+
+
 ### Plot the Multiverse
 lim_conn_session = ceilingn(max(abs(c(conn_within_vs_session_stats$Estimate,
                                       conn_across_vs_session_stats$Estimate))), 2)
@@ -141,8 +171,11 @@ conn_within_vs_session_stats <- within(conn_within_vs_session_stats, {
   fType = factor(Type, levels = c('Not Corrected for SNR', 'Corrected for SNR'))
 })
 
-p_conn_session_within <- plotMultiverseSplit(conn_within_vs_session_stats, 'Estimate', 'Significant.MC',
-                                             lim = lim_conn_session, facet_rule = 'fType + Band ~ fMeasure + Mask')
+p_conn_session_within <- plotMultiverseSplit(conn_within_vs_session_stats, 
+                                             'Estimate', 'Significant.MC',
+                                             lim = lim_conn_session, 
+                                             val.name = bquote(beta),
+                                             facet_rule = 'fType + Band ~ fMeasure + Mask')
 
 conn_across_vs_session_stats <- within(conn_across_vs_session_stats, {
   fMeasure = factor(Measure, levels = c('ImCoh', 'LagCoh', 'Coherence'))
@@ -150,10 +183,13 @@ conn_across_vs_session_stats <- within(conn_across_vs_session_stats, {
   fType = factor(Type, levels = c('Not Corrected for SNR', 'Corrected for SNR'))
 })
 
-p_conn_session_across <- plotMultiverseSplit(conn_across_vs_session_stats, 'Estimate', 'Significant.MC',
-                                             lim = lim_conn_session, facet_rule = 'fType + Band ~ fMeasure + Mask')
+p_conn_session_across <- plotMultiverseSplit(conn_across_vs_session_stats, 
+                                             'Estimate', 'Significant.MC',
+                                             lim = lim_conn_session, 
+                                             val.name = bquote(beta),
+                                             facet_rule = 'fType + Band ~ fMeasure + Mask')
 
-fig6supp2 <- plot_grid(
+fig7supp2 <- plot_grid(
   p_conn_session_within + theme(legend.position = 'none'),
   p_conn_session_across + theme(legend.position = 'none'),
   get_legend(p_conn_session_within),
@@ -161,8 +197,8 @@ fig6supp2 <- plot_grid(
   labels = c('A', 'B', '')
 )
 
-save_plot(file.path(plot.path, prefix, 'fig6supp2-multiverse-connectivity-longitude.png'),
-          fig6supp2, bg = "white", base_width = 8, base_height = 12)
+save_plot(file.path(output.folder, 'fig7supp2-multiverse-connectivity-longitude.png'),
+          fig7supp2, bg = "white", base_width = 8, base_height = 12)
 
 
 ### Save all the results

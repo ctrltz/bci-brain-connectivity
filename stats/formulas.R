@@ -89,12 +89,12 @@ accuracy_vs_connectivity_formula <- function(conn, SNRCorr = F, joint = F) {
     base_formula <- accuracy_vs_connectivity_formula_SNRCorr
   }
 
+  if (joint) {
+    base_formula <- update.formula(base_formula, ~ . + (1|Pipeline))
+  }
+  
   f_base <- as.character(base_formula)
   f <- as.formula(str_replace_all(f_base, c("PS" = conn)))
-  
-  if (joint) {
-    f <- update.formula(f, ~ . + (1|Pipeline))
-  }
 
   f
 }
@@ -140,14 +140,14 @@ tex.save(output_filename, "ConnectivitySessionSNR",
          formula2tex(connectivity_vs_session_formula_SNRCorr), prefix = prefix)
 
 # Effect of different processing methods on SNR
-snr_vs_processing_formula <- LogSNR ~ Inverse + ROI_Method + Mask + (1|Subject) + (1|Pipeline)
+snr_vs_processing_formula <- LogSNR ~ (Band + Inverse + Mask + ROI_Method)^2 + (1|Subject) + (1|Pipeline)
 
 tex.save(output_filename, "SNRProcessing",
          formula2tex(snr_vs_processing_formula), prefix = prefix)
 
 # Effect of different processing methods on connectivity
-connectivity_vs_processing_formula_base <- PS ~ Inverse + ROI_Method + Band + Mask + (1|Subject) + (1|Pipeline)
-connectivity_vs_processing_formula_SNRCorr <- PS ~ LogSNR + Inverse + ROI_Method + Band + Mask + (1|Subject) + (1|Pipeline)
+connectivity_vs_processing_formula_base <- PS ~ (Band + Inverse + Mask + ROI_Method)^2 + (1|Subject) + (1|Pipeline)
+connectivity_vs_processing_formula_SNRCorr <- PS ~ LogSNR + (Band + Inverse + Mask + ROI_Method)^2 + (1|Subject) + (1|Pipeline)
 
 connectivity_vs_processing_formula <- function(conn, SNRCorr = F) {
   # Dynamically construct PS ~ Processing formula for different PS measures

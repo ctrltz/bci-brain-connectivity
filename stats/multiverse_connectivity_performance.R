@@ -2,13 +2,21 @@
 # Effects of connectivity on accuracy
 #
 # Outputs:
-# 1. fig6-multiverse-connectivity-performance-within.png
-# 2. fig6supp1-multiverse-connectivity-performance-between-subject.png
+# 1. fig7-multiverse-connectivity-performance-within.png
+# 2. fig7supp1-multiverse-connectivity-performance-between-subject.png
 # 3. multiverse_connectivity_performance.RData - intermediate results of the 
 #    analysis
 ###
 
-### Between-Subject Effect of Connectivity Within Hemispheres on Accuracy
+# Load the data
+c(results, pipeline_desc) %<-% load_multiverse(input_filename)
+
+# Create output folder for images
+prefix = "multiverse_connectivity_performance"
+output.folder <- file.path(plot.path, prefix)
+dir.create(output.folder)
+
+### Between-Subject Effect of Connectivity on Accuracy
 
 param_space <- list(
   list(x = 'ImCoh_Within', y = 'Accuracy', z = 'LogSNR', group = 'Subject',
@@ -60,14 +68,14 @@ conn_vs_acc_between_stats <- within(conn_vs_acc_between_stats, {
 p_conn_acc_between_within <- plotMultiverseSplit(
   conn_vs_acc_between_stats[conn_vs_acc_between_stats$fType == 'Within-Hemisphere',],
   'Estimate', 'Significant.MC', facet_rule = 'fCorrection + Band ~ fMeasure + Mask',
-  val.name = '(Partial) Correlation', lim = lim_conn_acc_between)
+  val.name = bquote(rho / rho[partial]), lim = lim_conn_acc_between)
 p_conn_acc_between_across <- plotMultiverseSplit(
   conn_vs_acc_between_stats[conn_vs_acc_between_stats$fType == 'Across-Hemisphere',],
   'Estimate', 'Significant.MC', facet_rule = 'fCorrection + Band ~ fMeasure + Mask',
-  val.name = '(Partial) Correlation', lim = lim_conn_acc_between)
+  val.name = bquote(rho / rho[partial]), lim = lim_conn_acc_between)
 
 ### Combine the figures
-fig6supp1 <- plot_grid(
+fig7supp1 <- plot_grid(
   p_conn_acc_between_within + theme(legend.position = 'none'),
   p_conn_acc_between_across + theme(legend.position = 'none'),
   get_legend(p_conn_acc_between_within),
@@ -75,9 +83,20 @@ fig6supp1 <- plot_grid(
   labels = c('A', 'B', '')
 )
 
-save_plot(file.path(plot.path, prefix, 'fig6supp1-multiverse-connectivity-performance-between-subject.png'),
-          fig6supp1, bg = "white", base_width = 8, base_height = 12)
+save_plot(file.path(output.folder, 'fig7supp1-multiverse-connectivity-performance-between-subject.png'),
+          fig7supp1, bg = "white", base_width = 8, base_height = 12)
 
+
+# Plot the between-subject effect for all pipelines separately
+data_avg <- results %>%
+  aggregate(. ~ Pipeline + Subject, mean)
+
+for (ps in param_space) {
+  message(paste('plotMultiverseScatterBetween:', ps$x, '~', ps$y))
+  p_separate <- plotMultiverseScatterBetween(data_avg, ps$x, ps$y)
+  ggsave(file.path(output.folder, paste(ps$x, '_vs_accuracy_between.png', sep = '')),
+         plot = p_separate, width = 9, height = 6)
+}
 
 
 ### Within-Subject Effect of Connectivity Within Hemispheres on Accuracy
@@ -123,7 +142,7 @@ assert("Accuracy ~ Within PS [split] did not converge",
        all(conn_within_vs_acc_stats$Converged))
 
 conn_within_vs_acc_joint_stats <- lapply(param_space, fitMultiverseJointLME,
-                                         df = results)
+                                         df = results, refit = T)
 conn_within_vs_acc_joint_stats <- do.call(rbind, conn_within_vs_acc_joint_stats)
 assert("Accuracy ~ Within PS [joint] did not converge",
        all(conn_within_vs_acc_joint_stats$Converged))
@@ -142,32 +161,15 @@ conn_within_vs_acc_results <- lapply(conn_within_vs_acc_results,
                                      })
 
 
-### ImCoh Within Hemispheres vs Accuracy
-p_imcoh_within_acc <- ggplot(data = results) +
-  geom_point(mapping = aes(x = ImCoh_Within, y = Accuracy, group = Subject, color = Subject), size = 0.5) +
-  geom_line(mapping = aes(x = ImCoh_Within, y = Accuracy, group = Subject), color = "black", alpha = 0.5, 
-            stat="smooth", method = "lm", se = F, linewidth = 0.5) +
-  geom_line(mapping = aes(x = ImCoh_Within, y = Accuracy), color = "blue",
-            stat="smooth", method = "lm", se = F) +
-  facet_wrap(. ~ Pipeline, nrow = 4) + 
-  scale_colour_grey(start = 0.2, end = 0.8, aesthetics = "color", guide = "none")
-
-ggsave(file.path(plot.path, prefix, 'multiverse_imcoh_within_vs_accuracy.png'),
-       p_imcoh_within_acc, width = 9, height = 6)
-
-
-### Coherence Within Hemispheres vs Accuracy
-p_coh_within_acc <- ggplot(data = results) +
-  geom_point(mapping = aes(x = Coh_Within, y = Accuracy, group = Subject, color = Subject), size = 0.5) +
-  geom_line(mapping = aes(x = Coh_Within, y = Accuracy, group = Subject), color = "black", alpha = 0.5, 
-            stat="smooth", method = "lm", se = F, linewidth = 0.5) +
-  geom_line(mapping = aes(x = Coh_Within, y = Accuracy), color = "blue",
-            stat="smooth", method = "lm", se = F) +
-  facet_wrap(. ~ Pipeline, nrow = 4) + 
-  scale_colour_grey(start = 0.2, end = 0.8, aesthetics = "color", guide = "none")
-
-ggsave(file.path(plot.path, prefix, 'multiverse_coh_within_vs_accuracy.png'),
-       p_coh_within_acc, width = 9, height = 6)
+# Plot the within-subject effect for all pipelines separately
+for (ps in param_space) {
+  if (length(ps$cols.scale) < 3) {
+    message(paste('plotMultiverseScatterWithin:', ps$cols.scale[[1]], '~', ps$cols.scale[[2]]))
+    p_separate <- plotMultiverseScatterWithin(results, ps$cols.scale[[1]], ps$cols.scale[[2]])
+    ggsave(file.path(output.folder, paste(ps$cols.scale[[2]], '_vs_accuracy_within.png', sep = '')),
+           plot = p_separate, width = 9, height = 6)
+  }
+}
 
 
 ### Within-Subject Effect of Connectivity Across Hemispheres on Accuracy
@@ -232,19 +234,15 @@ conn_across_vs_acc_results <- lapply(conn_across_vs_acc_results,
                                      })
 
 
-
-### Coherence Across Hemispheres vs Accuracy
-p_coh_across_acc <- ggplot(data = results) +
-  geom_point(mapping = aes(x = Coh_Across, y = Accuracy, group = Subject, color = Subject), size = 0.5) +
-  geom_line(mapping = aes(x = Coh_Across, y = Accuracy, group = Subject), color = "black", alpha = 0.5, 
-            stat="smooth", method = "lm", se = F, linewidth = 0.5) +
-  geom_line(mapping = aes(x = Coh_Across, y = Accuracy), color = "blue",
-            stat="smooth", method = "lm", se = F) +
-  facet_wrap(. ~ Pipeline, nrow = 4) + 
-  scale_colour_grey(start = 0.2, end = 0.8, aesthetics = "color", guide = "none")
-
-ggsave(file.path(plot.path, prefix, 'multiverse_coh_across_vs_accuracy.png'),
-       p_coh_across_acc, width = 9, height = 6)
+# Plot the within-subject effect for all pipelines separately
+for (ps in param_space) {
+  if (length(ps$cols.scale) < 3) {
+    message(paste('plotMultiverseScatterWithin:', ps$cols.scale[[1]], '~', ps$cols.scale[[2]]))
+    p_separate <- plotMultiverseScatterWithin(results, ps$cols.scale[[1]], ps$cols.scale[[2]])
+    ggsave(file.path(output.folder, paste(ps$cols.scale[[2]], '_vs_accuracy_within.png', sep = '')),
+           plot = p_separate, width = 9, height = 6)
+  }
+}
 
 
 ### Plot the Multiverse
@@ -260,6 +258,7 @@ conn_within_vs_acc_stats <- within(conn_within_vs_acc_stats, {
 
 p_conn_acc_within <- plotMultiverseSplit(conn_within_vs_acc_stats, 'Estimate', 
                                          'Significant.MC', lim = lim_conn_acc_within, 
+                                         val.name = bquote(beta),
                                          facet_rule = 'fType + Band ~ fMeasure + Mask')
 
 # Across-hemisphere connectivity
@@ -271,11 +270,12 @@ conn_across_vs_acc_stats <- within(conn_across_vs_acc_stats, {
 
 p_conn_acc_across <- plotMultiverseSplit(conn_across_vs_acc_stats, 'Estimate', 
                                          'Significant.MC', lim = lim_conn_acc_within, 
+                                         val.name = bquote(beta),
                                          facet_rule = 'fType + Band ~ fMeasure + Mask')
 
 
 ### Combine the figures
-fig6 <- plot_grid(
+fig7 <- plot_grid(
   p_conn_acc_within + theme(legend.position = 'none'),
   p_conn_acc_across + theme(legend.position = 'none'),
   get_legend(p_conn_acc_within),
@@ -283,8 +283,8 @@ fig6 <- plot_grid(
   labels = c('A', 'B', '')
 )
 
-save_plot(file.path(plot.path, prefix, 'fig6-multiverse-connectivity-performance-within.png'),
-          fig6, bg = "white", base_width = 8, base_height = 12)
+save_plot(file.path(output.folder, 'fig7-multiverse-connectivity-performance-within.png'),
+          fig7, bg = "white", base_width = 8, base_height = 12)
 
 
 ### Save all the results

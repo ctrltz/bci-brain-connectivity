@@ -14,6 +14,6 @@
 \newcommand{\formulaAccuracyConnectivitySNR}{Accuracy $\sim$ 1 + SNR + PS + (1 $|$ Subject)}
 \newcommand{\formulaConnectivitySession}{PS $\sim$ 1 + Session + (1 $|$ Subject)}
 \newcommand{\formulaConnectivitySessionSNR}{PS $\sim$ 1 + SNR + Session + (1 $|$ Subject)}
-\newcommand{\formulaSNRProcessing}{SNR $\sim$ Inv. + ROI + Mask + (1 $|$ Subject) + (1 $|$ Pipeline)}
-\newcommand{\formulaConnectivityProcessing}{PS $\sim$ Inv. + ROI + Band + Mask + (1 $|$ Subject) + (1 $|$ Pipeline)}
-\newcommand{\formulaConnectivityProcessingSNR}{PS $\sim$ SNR + Inv. + ROI + Band + Mask + (1 $|$ Subject) + (1 $|$ Pipeline)}
+\newcommand{\formulaSNRProcessing}{SNR $\sim$ (Filt. + Inv. + ROI + Extr.)$^2$ + (1 $|$ Subject) + (1 $|$ Pipeline)}
+\newcommand{\formulaConnectivityProcessing}{PS $\sim$ (Filt. + Inv. + ROI + Extr.)$^2$ + (1 $|$ Subject) + (1 $|$ Pipeline)}
+\newcommand{\formulaConnectivityProcessingSNR}{PS $\sim$ SNR + (Filt. + Inv. + ROI + Extr.)$^2$ + (1 $|$ Subject) + (1 $|$ Pipeline)}

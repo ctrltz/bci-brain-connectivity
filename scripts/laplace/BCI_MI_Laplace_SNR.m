@@ -4,7 +4,7 @@
 %
 % Output:
 % 
-% 1. BCI_MI_C3_C4_Laplace.mat - results_lap structure with fields:
+% 1. BCI_MI_Laplace_SNR.mat - results_lap structure with fields:
 %     analyzed_sessions [subjects x sessions] - 1 if the session was
 %         analyzed, 0 otherwise
 %     spec_laplace [subjects x sessions x laplace x freqs] - spectra of C3-
@@ -17,16 +17,18 @@
 %     fooof_fits {subjects x sessions x laplace} - fitted FOOOF models for
 %         each subject, session, and channel, empty if not analyzed
 %
-% 2. BCI_MI_C3_C4_Laplace_results_long.mat - tabular data in the long
+% 2. BCI_MI_Laplace_SNR_results_long.mat - tabular data in the long
 %    format for analysis in R (subject ID, session ID, channel (1: C3-Lap,
 %    2: C4-Lap), accuracy, estimated SNR)
 %%%
 
+n_laplace_C3_C4 = 2; % consider only C3 and C4 for this analysis
+
 analyzed_sessions = zeros(n_subjects, n_sessions);
-spec_laplace = zeros(n_subjects, n_sessions, n_laplace, n_freqs);
-snr_laplace = NaN(n_subjects, n_sessions, n_laplace);
-r2_fooof = NaN(n_subjects, n_sessions, n_laplace);
-fooof_fits = cell(n_subjects, n_sessions, n_laplace);
+spec_laplace = zeros(n_subjects, n_sessions, n_laplace_C3_C4, n_freqs);
+snr_laplace = NaN(n_subjects, n_sessions, n_laplace_C3_C4);
+r2_fooof = NaN(n_subjects, n_sessions, n_laplace_C3_C4);
+fooof_fits = cell(n_subjects, n_sessions, n_laplace_C3_C4);
 
 %% Main loop
 parfor (subject = 1:n_subjects, num_workers)
@@ -48,8 +50,8 @@ parfor (subject = 1:n_subjects, num_workers)
         data_cnt = reshape(double(EEG_bb.data), n_sensors, []);
 
         % Apply Laplace transform
-        data_lap_bb = zeros(n_laplace, size(data_cnt, 2));
-        for ch = 1:n_laplace
+        data_lap_bb = zeros(n_laplace_C3_C4, size(data_cnt, 2));
+        for ch = 1:n_laplace_C3_C4
             ind = laplace{ch, 1};
             ind_neighbors = laplace{ch, 2};
             data_lap_bb(ch, :) = data_cnt(ind, :) - mean(data_cnt(ind_neighbors, :), 1);
@@ -60,7 +62,7 @@ parfor (subject = 1:n_subjects, num_workers)
         spec_laplace(subject, session, :, :) = spec_lap;
 
         % Calculate the SNR
-        for ch = 1:n_laplace
+        for ch = 1:n_laplace_C3_C4
             % Run FOOOF
             fooof_results = fooof(freqs, squeeze(spec_lap(ch, :))', ...
                 fit_range, fooof_settings, return_model);
@@ -89,7 +91,7 @@ results_lap.snr_laplace = snr_laplace;
 results_lap.r2_fooof = r2_fooof;
 results_lap.fooof_fits = fooof_fits;
 
-save([savedata 'BCI_MI_C3_C4_Laplace.mat'], 'results_lap', '-v7.3');
+save([savedata 'BCI_MI_Laplace_SNR.mat'], 'results_lap', '-v7.3');
 
 %% Plot FOOOF fits
 for subject = 1:n_subjects
@@ -99,9 +101,9 @@ for subject = 1:n_subjects
         end
 
         h = figure('Position', [1 1 947 523]);
-        for ch = 1:n_laplace
+        for ch = 1:n_laplace_C3_C4
             chanlabel = all_chanlocs(laplace{ch, 1}).labels;
-            ax = subplot(1, n_laplace, ch);
+            ax = subplot(1, n_laplace_C3_C4, ch);
         
             fooof_results = fooof_fits{subject, session, ch};
             snr_mu = snr_laplace(subject, session, ch);
@@ -120,16 +122,16 @@ for subject = 1:n_subjects
 end
 
 %% Export to R in the long format
-load([savedata 'BCI_MI_task1_accuracy.mat']);   % task1_accuracy
+load([savedata 'BCI_MI_task_accuracy.mat']);   % task_accuracy
 
 % Export to R for statistical analysis
-control_reshape = cell(n_subjects, n_sessions, n_laplace);
+control_reshape = cell(n_subjects, n_sessions, n_laplace_C3_C4);
 for subject = 1:n_subjects
     for session = 1:n_sessions
-        for ch = 1:n_laplace
+        for ch = 1:n_laplace_C3_C4
             if results_lap.analyzed_sessions(subject, session) && good_sessions(subject, session)
                 control_reshape{subject, session, ch} = ...
-                    [subject session ch task1_accuracy(subject, session)];
+                    [subject session ch task_accuracy(subject, session)];
             else
                 % mark session with NaN accuracy to be removed later
                 control_reshape{subject, session, ch} = ...
@@ -145,5 +147,5 @@ data(isnan(data(:, 4)), :) = [];
 labels = {'Subject', 'Session', 'Channel', 'Accuracy', 'SNR'};
 channels = {'C3-Lap', 'C4-Lap'};
 
-save([savedata 'BCI_MI_C3_C4_Laplace_results_long.mat'], ...
+save([savedata 'BCI_MI_Laplace_SNR_results_long.mat'], ...
     'data', 'labels', 'channels');

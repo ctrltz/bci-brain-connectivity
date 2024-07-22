@@ -14,7 +14,8 @@ function [cfg] = BCI_MI_init_workspace(toolboxes, python_path)
     
     preproc.base = [data.base 'preproc/'];
     preproc.aux = [data.base 'aux/'];
-    preproc.task1 = [preproc.base 'task1/'];
+
+    derivatives.base = [data.base 'derivatives/'];
 
     results.base = normpath([pwd() '/../results/']);
     results.misc = [results.base 'miscellaneous/'];
@@ -24,7 +25,7 @@ function [cfg] = BCI_MI_init_workspace(toolboxes, python_path)
     results.tex = [results.base 'tex/'];
 
     folders_to_create = {preproc.base, preproc.aux, ...
-        preproc.task1, results.base, results.misc, ...
+        derivatives.base, results.base, results.misc, ...
         results.fooof, results.fooof_lap, results.fooof_roi, results.tex};
     for i = 1:numel(folders_to_create)
         if ~exist(folders_to_create{i}, 'dir')
@@ -92,6 +93,7 @@ function [cfg] = BCI_MI_init_workspace(toolboxes, python_path)
     cfg.asset = asset;
     cfg.data = data;
     cfg.preproc = preproc;
+    cfg.derivatives = derivatives;
     cfg.results = results;
     cfg.toolbox = toolbox;
 end

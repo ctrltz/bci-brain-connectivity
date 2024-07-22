@@ -9,6 +9,7 @@ toolbox
 **/BCI_MI_LCMV.mat
 toolboxes/bbci_public
 toolboxes/eeglab2021.0
+toolboxes/FastICA_25
 toolboxes/fooof_mat
 toolboxes/haufe/sa_nyhead.mat
 toolboxes/tprod
@@ -27,6 +28,10 @@ toolboxes/tprod
 **/*.pdf
 **/*.soc
 **/*.spl
+
+# Source ZIP
+paper_flat/
+source_files.zip
 
 # Compiled README
 README.html

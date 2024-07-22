@@ -5,11 +5,12 @@ function varargout = aggregate_connectivity(data, n_comps, n_rois, band_freqs)
 % Parameters:
 %   data - cell array with connectivity matrices
 %   n_comps - number of SVD components per ROI
-%   n_rois - number of ROIs
+%   n_rois - number of ROIs / channels
 %   band_freqs - frequency bins to be aggregated
 %
 % Returns:
-%   aggregated connectivity matrices, the number of outputs is dynamic
+%   aggregated connectivity matrices, the number and the order of outputs 
+%   corresponds to cells in 'data'
 
     n_outputs = nargout;
     
