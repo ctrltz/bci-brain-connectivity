@@ -1,23 +1,23 @@
 ## BCI & Brain Connectivity
 
-This repository contains the code for the multiverse analysis of SNR and EEG-based functional connectivity in the context of sensorimotor BCI training. Please refer to the accompanying paper for details and cite it if you use the code from this repository:
+This repository contains the code for the multiverse analysis of SNR and EEG-based phase synchronization as predictors of performance in a sensorimotor BCI training. Please refer to the accompanying paper for details and cite it if you use the code from this repository:
 
-> Kapralov, N., Jamshidi Idaji, M., Stephani, T., Studenova, A., Vidaurre, C., Ros., T., Villringer, A., Nikulin, V., 2023. Sensorimotor brain-computer interface performance depends on signal-to-noise ratio but not connectivity of the mu rhythm in a multiverse analysis of longitudinal data. bioRxiv. doi:[10.1101/2023.09.30.558407](https://doi.org/10.1101/2023.09.30.558407)
+> Kapralov, N., Jamshidi Idaji, M., Stephani, T., Studenova, A., Vidaurre, C., Ros, T., Villringer, A., & Nikulin, V. (2024). Sensorimotor brain-computer interface performance depends on signal-to-noise ratio but not connectivity of the mu rhythm in a multiverse analysis of longitudinal data. Journal of Neural Engineering, 21(5), doi: [10.1088/1741-2552/ad7a24](https://doi.org/10.1088/1741-2552/ad7a24)
 
 ### Prerequisites
 
-1. MATLAB (tested with R2022b) and the following toolboxes/files (can also be installed in the `toolboxes` folder using the `make setup_toolboxes` command in Linux):
+1. MATLAB (tested with R2022b) and the following toolboxes/files (should be installed in the `toolboxes` folder, also possible using the `make setup_toolboxes` command in Linux):
 
  * [[link](https://github.com/bbci/bbci_public)] Berlin Brain-Computer Interface (BBCI) toolbox. **NOTE**: `toolboxes/BTB/BTB.mat` is provided for the BBCI toolbox to run. 
  * [[link](https://sccn.ucsd.edu/eeglab/download.php)] EEGLAB 2021.0. **NOTE**: The toolbox was manually set to [use double precision](https://eeglab.org/tutorials/misc/EEGLAB_option_menu.html) in order to avoid problems when analyzing data outside of EEGLAB.
- * [[link](https://research.ics.aalto.fi/ica/fastica/code/FastICA_2.5.zip)] FastICA v2.5 (only required if performing preprocessing from scratch)
+ * [[link](https://research.ics.aalto.fi/ica/fastica/code/FastICA_2.5.zip)] FastICA v2.5 (GPL, only required if performing preprocessing from scratch)
  * [[link](https://www.parralab.org/nyhead/sa_nyhead.mat)] Pre-computed New York Head model
  * [[link](https://github.com/fooof-tools/fooof_mat)] MATLAB Wrapper for FOOOF 
- * [[link](https://github.com/jadref/tprod)] tprod toolbox. **NOTE**: apparently, it is problematic to compile this toolbox in the newer versions of MATLAB - one could either do it in previous versions or try to use the compiled files from this repository.
+ * [[link](https://github.com/jadref/tprod)] tprod toolbox (GPL). **NOTE**: apparently, it is problematic to compile this toolbox in the newer versions of MATLAB - one could either do it in previous versions or try to use the compiled files from this repository.
  
 2. Python with FOOOF installed (`pip install fooof` or use `requirements.txt`). **NOTE**: keep in mind the [compatibility](https://www.mathworks.com/support/requirements/python-compatibility.html) between different versions of MATLAB and Python.
 
-3. R (tested with version 4.2.2) and a number of packages specified in the environment file (`stats/renv.lock`). `renv::restore()` can be used to install the required packages, more details are available [here](https://rstudio.github.io/renv/articles/collaborating.html).
+3. R (tested with version 4.2.2) and a number of packages specified in the environment file (`stats/renv.lock`). `renv::restore()` can be used to install the required packages (some are licensed under GPL), more details are available [here](https://rstudio.github.io/renv/articles/collaborating.html).
 
 4. Local LaTeX environment for compiling the final PDF of the paper and supplementary material.
 
@@ -31,7 +31,9 @@ This repository contains the code for the multiverse analysis of SNR and EEG-bas
   * `aux` - preprocessing info
   * `preproc`
     * `task1` - preprocessed data
-  * `derivatives` - intermediate results
+  * `derivatives`
+    * `task1` - intermediate results (MATLAB)
+    * `r` - intermediate results (R)
 * `paper` - everything that is required for LaTeX
   * `figures` - here the generated figures are collected
   * `numbers` - here the generated output is collected
@@ -47,13 +49,13 @@ This repository contains the code for the multiverse analysis of SNR and EEG-bas
 
 2. Set up all the prerequisites (see above).
 
-3. Download the original dataset using `make download_raw_data` or create a symbolic link to the location of the data if it was downloaded earlier (scripts in this repository do not change the original files):
+3. Download the original dataset using `make download_raw_data` or manually by saving all files to the `data/raw/` folder. If you downloaded the data earlier, you can create a symbolic link to the location of the data like shown below (scripts in this repository do not change the original files):
 
 ```
 ln -s <location> ./data/raw
 ```
 
-4. Download the preprocessing information using `make download_aux_data` or manually from the [OSF repository](https://osf.io/tcvyd/).
+4. Download the preprocessing information using `make download_aux_data` or manually to the `data/aux` folder from the [OSF repository](https://osf.io/tcvyd/).
 
 5. Specify the path to a Python executable with FOOOF installed in line 7 of the file `scripts/BCI_MI_analysis_main.m`.
 
